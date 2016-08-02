@@ -1,20 +1,16 @@
-infamous
+motor
 ========
 
 A famous UI library.
 
-[![NPM](https://nodei.co/npm/infamous.png)](https://nodei.co/npm/infamous/)
-
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/infamous/infamous?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![NPM](https://nodei.co/npm/motor.png)](https://nodei.co/npm/motor/)
 
 Getting Started
 ---------------
 
 The following sample workflows show possible ways to install and start using
-infamous. These examples will refer to the [snippets](#snippets) at the end of
+motor. These examples will refer to the [snippets](#snippets) at the end of
 the README.
-
-Also read the [docs](http://infamous.github.io/infamous).
 
 ### browserify workflow
 
@@ -31,10 +27,10 @@ Install [`browserify`](http://browserify.org) globally.
 npm install -g browserify
 ```
 
-Install infamous along with famous, famousify, and cssify into your project.
+Install motor along with famous, famousify, and cssify into your project.
 
 ```
-npm install infamous famous famousify cssify --save
+npm install motor famous famousify cssify --save
 ```
 
 Add the the famousify and cssify transforms to your package.json so it looks
@@ -46,7 +42,7 @@ similar to the following.
     "cssify": "^0.6.0",
     "famous": "^0.3.4",
     "famousify": "^0.1.5",
-    "infamous": "^0.0.15"
+    "motor": "^0.0.15"
   },
   "browserify": {
     "transform": [
@@ -101,11 +97,11 @@ Install [`webpack`](http://webpack.github.io) globally.
 npm install -g webpack
 ```
 
-Install infamous along with famous, webpack, css-loader, and style-loader into
+Install motor along with famous, webpack, css-loader, and style-loader into
 your project.
 
 ```
-npm install infamous webpack famous css-loader style-loader --save
+npm install motor webpack famous css-loader style-loader --save
 ```
 
 Create `webpack.config.js` to configure webpack.
@@ -188,10 +184,10 @@ following.
 }
 ```
 
-Install infamous along with famous and css into your project.
+Install motor along with famous and css into your project.
 
 ```
-jspm install -y infamous famous css
+jspm install -y motor famous css
 ```
 
 Suppose you have `src/app.js` containing [Snippet 3](#snippet-3) and
@@ -216,8 +212,8 @@ Snippets
 
 ```js
 var style                  = require('famous/core/famous.css') // needed by famous
-var Plane                  = require('infamous/Plane')
-var contextWithPerspective = require('infamous/utils').contextWithPerspective
+var Plane                  = require('motor/Plane')
+var contextWithPerspective = require('motor/utils').contextWithPerspective
 
 var ctx = contextWithPerspective(1000)
 var square = new Plane({
@@ -241,7 +237,7 @@ square.transform.setRotate([0,2*Math.PI,0], {duration: 5000, curve: 'easeInOut'}
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Project with infamous</title>
+        <title>Project with motor</title>
         <meta charset="utf-8" />
     </head>
     <body>
@@ -255,8 +251,8 @@ square.transform.setRotate([0,2*Math.PI,0], {duration: 5000, curve: 'easeInOut'}
 ```js
 import 'famous/core/famous.css!'
 
-import Plane from 'infamous/Plane'
-import {contextWithPerspective} from 'infamous/utils'
+import Plane from 'motor/Plane'
+import {contextWithPerspective} from 'motor/utils'
 
 var ctx = contextWithPerspective(1000)
 var square = new Plane({
@@ -279,7 +275,7 @@ square.transform.setRotate([0,2*Math.PI,0], {duration: 5000, curve: 'easeInOut'}
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Project with infamous</title>
+        <title>Project with motor</title>
         <meta charset="utf-8" />
     </head>
     <body>
