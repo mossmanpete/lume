@@ -1,5 +1,5 @@
 /*
- * @overview Utility functions used by infamous.
+ * @overview Utility functions used by motor.
  *
  * LICENSE
  *

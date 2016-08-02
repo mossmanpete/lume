@@ -1,7 +1,7 @@
 {
-  "name": "infamous",
-  "version": "0.1.0",
-  "description": "A famo.us UI library.",
+  "name": "motor",
+  "version": "0.1.3",
+  "description": "A UI library.",
   "format": "es6",
   "main": false,
   "browser": "infamous.js",

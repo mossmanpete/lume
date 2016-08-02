@@ -257,7 +257,7 @@ export class PushMenuLayout extends Molecule {
             }
 
             var styles = {
-                '.infamous-fadeLeft': {
+                '.motor-fadeLeft': {
                     background: [
                         endColor,
                         '-moz-linear-gradient(left, '+endColor+' 0%, '+startColor+' 100%)',
@@ -269,7 +269,7 @@ export class PushMenuLayout extends Molecule {
                     ],
                     filter: 'progid:DXImageTransform.Microsoft.gradient( startColorstr=\'#cc000000\', endColorstr=\'#4d000000\', GradientType=1 )'
                 },
-                '.infamous-fadeRight': {
+                '.motor-fadeRight': {
                     background: [
                         startColor,
                         '-moz-linear-gradient(left, '+startColor+' 0%, '+endColor+' 100%)',
@@ -295,7 +295,7 @@ export class PushMenuLayout extends Molecule {
                 size: [undefined,undefined],
                 classes: [
                     // TODO: switch to jss namespace.
-                    (this.options.menuSide == 'left'? 'infamous-fadeRight': 'infamous-fadeLeft')
+                    (this.options.menuSide == 'left'? 'motor-fadeRight': 'motor-fadeLeft')
                 ],
                 properties: {
                     zIndex: '1000',
@@ -429,7 +429,7 @@ export class PushMenuLayout extends Molecule {
 
     /**
      * Add a scenegraph to the menu area of the PushMenuLayout. If the object
-     * that you pass into setMenu is an infamous component, or a famo.us
+     * that you pass into setMenu is a motor component, or a famo.us
      * Surface, then it's events will be piped to this PushMenuLayout's input
      * sync so that the user can open and close the menu with touch or mouse.
      * General advice here would be to keep whatever you put into the menu
