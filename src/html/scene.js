@@ -25,8 +25,10 @@ import {
 } from '../core/webglUtils'
 
 import imageUrl from './image'
-import * as PIXI from 'pixi.js' // also sets the PIXI global.
-import SVG from 'pixi-svg' // uses the PIXI global, won't work if you don't import the main `pixi.js module`.
+//import * as PIXI from 'pixi.js' // also sets the PIXI global.
+//import SVG from 'pixi-svg' // uses the PIXI global, won't work if you don't import the main `pixi.js module`.
+import Two from 'two.js/build/two'
+console.log(' --- Two?', Two)
 
 initMotorHTMLBase()
 
@@ -235,6 +237,7 @@ class MotorHTMLScene extends Observable.mixin(MotorHTMLBase) {
                 }
 
                 if (hasTexture) {
+
                     // TODO we would create one per Geometry (and eventually multiple per
                     // geometry), but for now just one texture for all quads to get it working.
                     // TODO Make the texture only once, not each tick.
@@ -256,62 +259,68 @@ class MotorHTMLScene extends Observable.mixin(MotorHTMLBase) {
                         node.__texture = gl.createTexture()
                     }
 
-                    ///// TEXTURE FROM PIXI-SVG {
-                    if (!node.__pixiRenderer) {
-                        node.__pixiRenderer = PIXI.autoDetectRenderer({
+                    ///// SVG TEXTURE FROM TWO.JS {
+                    //if (!node.__twoJs) {
+                        //node.__twoJs = new Two
+                    //}
+                    ///// }
 
-                            width: node._calculatedSize.x * window.devicePixelRatio,
-                            height: node._calculatedSize.y * window.devicePixelRatio,
-                            //width: 300 * window.devicePixelRatio,
-                            //height: 300 * window.devicePixelRatio,
+                    ///// SVG TEXTURE FROM PIXI-SVG {
+                    //if (!node.__pixiRenderer) {
+                        //node.__pixiRenderer = PIXI.autoDetectRenderer({
 
-                            resolution: window.devicePixelRatio,
-                        });
+                            //width: node._calculatedSize.x * window.devicePixelRatio,
+                            //height: node._calculatedSize.y * window.devicePixelRatio,
+                            ////width: 300 * window.devicePixelRatio,
+                            ////height: 300 * window.devicePixelRatio,
 
-                        node.__pixiStage = new PIXI.Container()
-                        window.stage = node.__pixiStage
-                    }
+                            //resolution: window.devicePixelRatio,
+                        //});
 
-                    node.__pixiStage.removeChild(node.__svgGraphic)
+                        //node.__pixiStage = new PIXI.Container()
+                        //window.stage = node.__pixiStage
+                    //}
 
-                    node.__svgGraphic = new SVG(svgElement)
+                    //node.__pixiStage.removeChild(node.__svgGraphic)
 
-                    node.__pixiStage.addChild(node.__svgGraphic)
+                    //node.__svgGraphic = new SVG(svgElement)
 
-                    node.__pixiRenderer.render(node.__pixiStage);
+                    //node.__pixiStage.addChild(node.__svgGraphic)
 
-                    const image = node.__pixiRenderer.view
-                    const isPowerOf2 = value => (value & (value - 1)) == 0
+                    //node.__pixiRenderer.render(node.__pixiStage);
 
-                    // copy the pixi canvas image to the texture.
-                    gl.bindTexture(gl.TEXTURE_2D, node.__texture)
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image)
+                    //const image = node.__pixiRenderer.view
+                    //const isPowerOf2 = value => (value & (value - 1)) == 0
 
-                    // TODO: unbind from buffers and textures when done
-                    // using them, to prevent modification from outside
+                    //// copy the pixi canvas image to the texture.
+                    //gl.bindTexture(gl.TEXTURE_2D, node.__texture)
+                    //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image)
 
-                    // Mip maps can only be generated on images whose width and height are a power of 2.
-                    if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-                        gl.generateMipmap(gl.TEXTURE_2D)
-                        // TODO make filters configurable?
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+                    //// TODO: unbind from buffers and textures when done
+                    //// using them, to prevent modification from outside
 
-                        // Using just NEAREST or LINEAR only can increase performance, for example.
+                    //// Mip maps can only be generated on images whose width and height are a power of 2.
+                    //if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                        //gl.generateMipmap(gl.TEXTURE_2D)
+                        //// TODO make filters configurable?
+                        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+                        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+
+                        //// Using just NEAREST or LINEAR only can increase performance, for example.
+                        ////gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+                        ////gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+                    //}
+                    //else {
+                        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+                        //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+                        //// TODO make filters configurable?
                         //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
                         //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-                    }
-                    else {
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-                        // TODO make filters configurable?
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-                    }
+                    //}
 
                     ///// }
 
-                    ///// TEXTURE FROM IMAGE {
+                    ///// PRE-DEFINED TEXTURE FROM IMAGE {
 
                     //// set a temporary solid color texture for the meantime
                     //// while the following texture loads.
