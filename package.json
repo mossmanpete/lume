@@ -26,6 +26,7 @@
     "army-knife": "^0.2.1",
     "awaitbox": "^1.0.0",
     "babel-runtime": "^6.0.0",
+    "buble": "^0.15.2",
     "document-register-element": "^0.6.1",
     "famous": "trusktr/famous#commonjs",
     "famousify": "^0.1.5",
