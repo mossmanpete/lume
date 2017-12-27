@@ -6,7 +6,7 @@ var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 
 
 
 function unwrapExports (x) {
-	return x && x.__esModule ? x['default'] : x;
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
 function createCommonjsModule(fn, module) {
@@ -72,7 +72,7 @@ var _objectGpo = Object.getPrototypeOf || function (O) {
 };
 
 var _core = createCommonjsModule(function (module) {
-var core = module.exports = { version: '2.5.0' };
+var core = module.exports = { version: '2.5.3' };
 if (typeof __e == 'number') { __e = core; } // eslint-disable-line no-undef
 });
 
@@ -315,7 +315,7 @@ exports.default = function () {
       descriptor.enumerable = descriptor.enumerable || false;
       descriptor.configurable = true;
       if ("value" in descriptor) { descriptor.writable = true; }
-      (0, _defineProperty2.default)(target, descriptor.key, descriptor);
+      (_defineProperty2.default)(target, descriptor.key, descriptor);
     }
   }
 
@@ -568,7 +568,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
   var VALUES_BUG = false;
   var proto = Base.prototype;
   var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
+  var $default = (!BUGGY && $native) || getMethod(DEFAULT);
   var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
   var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
   var methods, key, IteratorPrototype;
@@ -750,15 +750,6 @@ var defineProperty$3 = _objectDp.f;
 var _wksDefine = function (name) {
   var $Symbol = _core.Symbol || (_core.Symbol = _library ? {} : _global.Symbol || {});
   if (name.charAt(0) != '_' && !(name in $Symbol)) { defineProperty$3($Symbol, name, { value: _wksExt.f(name) }); }
-};
-
-var _keyof = function (object, el) {
-  var O = _toIobject(object);
-  var keys = _objectKeys(O);
-  var length = keys.length;
-  var index = 0;
-  var key;
-  while (length > index) { if (O[key = keys[index++]] === el) { return key; } }
 };
 
 var f$2 = Object.getOwnPropertySymbols;
@@ -1025,9 +1016,9 @@ _export(_export.S + _export.F * !USE_NATIVE, 'Symbol', {
       : SymbolRegistry[key] = $Symbol(key);
   },
   // 19.4.2.5 Symbol.keyFor(sym)
-  keyFor: function keyFor(key) {
-    if (isSymbol(key)) { return _keyof(SymbolRegistry, key); }
-    throw TypeError(key + ' is not a symbol!');
+  keyFor: function keyFor(sym) {
+    if (!isSymbol(sym)) { throw TypeError(sym + ' is not a symbol!'); }
+    for (var key in SymbolRegistry) { if (SymbolRegistry[key] === sym) { return key; } }
   },
   useSetter: function () { setter = true; },
   useSimple: function () { setter = false; }
@@ -1059,15 +1050,14 @@ $JSON && _export(_export.S + _export.F * (!USE_NATIVE || _fails(function () {
   stringify: function stringify(it) {
     var arguments$1 = arguments;
 
-    if (it === undefined || isSymbol(it)) { return; } // IE8 returns string on undefined
     var args = [it];
     var i = 1;
     var replacer, $replacer;
     while (arguments.length > i) { args.push(arguments$1[i++]); }
-    replacer = args[1];
-    if (typeof replacer == 'function') { $replacer = replacer; }
-    if ($replacer || !_isArray(replacer)) { replacer = function (key, value) {
-      if ($replacer) { value = $replacer.call(this, key, value); }
+    $replacer = replacer = args[1];
+    if (!_isObject(replacer) && it === undefined || isSymbol(it)) { return; } // IE8 returns string on undefined
+    if (!_isArray(replacer)) { replacer = function (key, value) {
+      if (typeof $replacer == 'function') { value = $replacer.call(this, key, value); }
       if (!isSymbol(value)) { return value; }
     }; }
     args[1] = replacer;
@@ -1138,7 +1128,7 @@ exports.default = function (self, call) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
   }
 
-  return call && ((typeof call === "undefined" ? "undefined" : (0, _typeof3.default)(call)) === "object" || typeof call === "function") ? call : self;
+  return call && ((typeof call === "undefined" ? "undefined" : (_typeof3.default)(call)) === "object" || typeof call === "function") ? call : self;
 };
 });
 
@@ -1217,10 +1207,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = function (subClass, superClass) {
   if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : (0, _typeof3.default)(superClass)));
+    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : (_typeof3.default)(superClass)));
   }
 
-  subClass.prototype = (0, _create2.default)(superClass && superClass.prototype, {
+  subClass.prototype = (_create2.default)(superClass && superClass.prototype, {
     constructor: {
       value: subClass,
       enumerable: false,
@@ -1228,7 +1218,7 @@ exports.default = function (subClass, superClass) {
       configurable: true
     }
   });
-  if (superClass) { _setPrototypeOf2.default ? (0, _setPrototypeOf2.default)(subClass, superClass) : subClass.__proto__ = superClass; }
+  if (superClass) { _setPrototypeOf2.default ? (_setPrototypeOf2.default)(subClass, superClass) : subClass.__proto__ = superClass; }
 };
 });
 
@@ -7277,10 +7267,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = function get(object, property, receiver) {
   if (object === null) { object = Function.prototype; }
-  var desc = (0, _getOwnPropertyDescriptor2.default)(object, property);
+  var desc = (_getOwnPropertyDescriptor2.default)(object, property);
 
   if (desc === undefined) {
-    var parent = (0, _getPrototypeOf2.default)(object);
+    var parent = (_getPrototypeOf2.default)(object);
 
     if (parent === null) {
       return undefined;
@@ -7486,7 +7476,7 @@ var Rule = function () {
     this.className = options.className || '';
     this.originalStyle = style;
     // We expect style to be plain object.
-    this.style = (0, utils$1.clone)(style);
+    this.style = (_utils.clone)(style);
     if (options.named) {
       this.name = selector;
       if (!this.className) {
@@ -7594,7 +7584,7 @@ var Rule = function () {
   }, {
     key: 'toString',
     value: function toString(options) {
-      return (0, utils$1.toCSS)(this.selector, this.style, options);
+      return (_utils.toCSS)(this.selector, this.style, options);
     }
   }, {
     key: 'selector',
@@ -7609,7 +7599,7 @@ var Rule = function () {
       if (sheet) { sheet.unregisterRule(this); }
 
       this.selectorText = selector;
-      this.className = (0, utils$1.findClassNames)(selector);
+      this.className = (_utils.findClassNames)(selector);
 
       if (!this.renderable) {
         // Register the rule with new selector.
@@ -7887,7 +7877,7 @@ var ConditionalRule = function () {
       var str = this.selector + ' {\n';
       for (var name in this$1.rules) {
         var rule = this$1.rules[name];
-        if (rule.style && (0, utils$1.isEmptyObject)(rule.style)) {
+        if (rule.style && (_utils.isEmptyObject)(rule.style)) {
           continue;
         }
         var ruleStr = rule.toString({ indentationLevel: 1 });
@@ -7952,13 +7942,13 @@ var Rule = function () {
       if (Array.isArray(this.style)) {
         var str = '';
         for (var index = 0; index < this.style.length; index++) {
-          str += (0, utils$1.toCSS)(this$1.selector, this$1.style[index], options);
+          str += (_utils.toCSS)(this$1.selector, this$1.style[index], options);
           if (this$1.style[index + 1]) { str += '\n'; }
         }
         return str;
       }
 
-      return (0, utils$1.toCSS)(this.selector, this.style, options);
+      return (_utils.toCSS)(this.selector, this.style, options);
     }
   }]);
 
@@ -8346,7 +8336,7 @@ var StyleSheet = function () {
     this.deployed = false;
     this.linked = false;
 
-    var Renderer = (0, _findRenderer2.default)(this.options);
+    var Renderer = (_findRenderer2.default)(this.options);
     this.options.Renderer = Renderer;
     this.renderer = new Renderer(this.options);
 
@@ -8470,11 +8460,11 @@ var StyleSheet = function () {
           continue;
         }
 
-        if (rule.style && (0, utils$1.isEmptyObject)(rule.style)) {
+        if (rule.style && (_utils.isEmptyObject)(rule.style)) {
           continue;
         }
 
-        if (rule.rules && (0, utils$1.isEmptyObject)(rule.rules)) {
+        if (rule.rules && (_utils.isEmptyObject)(rule.rules)) {
           continue;
         }
 
@@ -8504,7 +8494,7 @@ var StyleSheet = function () {
       });
       // Scope options overwrite instance options.
       if (options.named == null) { options.named = this.options.named; }
-      var rule = (0, _createRule3.default)(name, style, options);
+      var rule = (_createRule3.default)(name, style, options);
       this.registerRule(rule);
       options.jss.plugins.run(rule);
       return rule;
@@ -8833,9 +8823,9 @@ var Jss = function () {
         style = selector;
         selector = null;
       }
-      var rule = (0, _createRule3.default)(selector, style, _extends({}, options, {
+      var rule = (_createRule3.default)(selector, style, _extends({}, options, {
         jss: this,
-        Renderer: (0, _findRenderer2.default)(options)
+        Renderer: (_findRenderer2.default)(options)
       }));
       this.plugins.run(rule);
       return rule;
@@ -9221,11 +9211,11 @@ function supportedProperty(prop) {
   // Camelization is required because we can't test using
   // css syntax for e.g. in FF.
   // Test if property is supported as it is.
-  if ((0, _camelize2['default'])(prop) in el.style) {
+  if ((_camelize2['default'])(prop) in el.style) {
     cache[prop] = prop;
   }
   // Test if property is supported with vendor prefix.
-  else if (_prefix2['default'].js + (0, _camelize2['default'])('-' + prop) in el.style) {
+  else if (_prefix2['default'].js + (_camelize2['default'])('-' + prop) in el.style) {
       cache[prop] = _prefix2['default'].css + prop;
     } else {
       cache[prop] = false;
@@ -10862,8 +10852,8 @@ var _microtask = function () {
     notify = function () {
       process$2.nextTick(flush);
     };
-  // browsers with MutationObserver
-  } else if (Observer) {
+  // browsers with MutationObserver, except iOS Safari - https://github.com/zloirock/core-js/issues/339
+  } else if (Observer && !(_global.navigator && _global.navigator.standalone)) {
     var toggle = true;
     var node = document.createTextNode('');
     new Observer(flush).observe(node, { characterData: true }); // eslint-disable-line no-new
@@ -10931,6 +10921,8 @@ var _perform = function (exec) {
 };
 
 var _promiseResolve = function (C, x) {
+  _anObject(C);
+  if (_isObject(x) && x.constructor === C) { return x; }
   var promiseCapability = _newPromiseCapability.f(C);
   var resolve = promiseCapability.resolve;
   resolve(x);
@@ -11023,12 +11015,6 @@ var USE_NATIVE$1 = !!function () {
 }();
 
 // helpers
-var sameConstructor = _library ? function (a, b) {
-  // with library wrapper special case
-  return a === b || a === $Promise && b === Wrapper;
-} : function (a, b) {
-  return a === b;
-};
 var isThenable = function (it) {
   var then;
   return _isObject(it) && typeof (then = it.then) == 'function' ? then : false;
@@ -11097,14 +11083,7 @@ var onUnhandled = function (promise) {
   });
 };
 var isUnhandled = function (promise) {
-  if (promise._h == 1) { return false; }
-  var chain = promise._a || promise._c;
-  var i = 0;
-  var reaction;
-  while (chain.length > i) {
-    reaction = chain[i++];
-    if (reaction.fail || !isUnhandled(reaction.promise)) { return false; }
-  } return true;
+  return promise._h !== 1 && (promise._a || promise._c).length === 0;
 };
 var onHandleUnhandled = function (promise) {
   task.call(_global, function () {
@@ -11200,7 +11179,7 @@ if (!USE_NATIVE$1) {
     this.reject = _ctx($reject, promise, 1);
   };
   _newPromiseCapability.f = newPromiseCapability = function (C) {
-    return sameConstructor($Promise, C)
+    return C === $Promise || C === Wrapper
       ? new OwnPromiseCapability(C)
       : newGenericPromiseCapability(C);
   };
@@ -11224,9 +11203,7 @@ _export(_export.S + _export.F * !USE_NATIVE$1, PROMISE, {
 _export(_export.S + _export.F * (_library || !USE_NATIVE$1), PROMISE, {
   // 25.4.4.6 Promise.resolve(x)
   resolve: function resolve(x) {
-    // instanceof instead of internal slot check because we should fix it without replacement native Promise core
-    if (x instanceof $Promise && sameConstructor(x.constructor, this)) { return x; }
-    return _promiseResolve(this, x);
+    return _promiseResolve(_library && this === Wrapper ? $Promise : this, x);
   }
 });
 _export(_export.S + _export.F * !(USE_NATIVE$1 && _iterDetect(function (iter) {
@@ -12023,10 +12000,10 @@ var _getOwnPropertyDescriptor2 = _interopRequireDefault(getOwnPropertyDescriptor
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function set(object, property, value, receiver) {
-  var desc = (0, _getOwnPropertyDescriptor2.default)(object, property);
+  var desc = (_getOwnPropertyDescriptor2.default)(object, property);
 
   if (desc === undefined) {
-    var parent = (0, _getPrototypeOf2.default)(object);
+    var parent = (_getPrototypeOf2.default)(object);
 
     if (parent !== null) {
       set(parent, property, value, receiver);
@@ -12376,7 +12353,7 @@ var _setCollectionOf = function (COLLECTION) {
     var arguments$1 = arguments;
 
     var length = arguments.length;
-    var A = Array(length);
+    var A = new Array(length);
     while (length--) { A[length] = arguments$1[length]; }
     return new this(A);
   } });
@@ -13128,13 +13105,10 @@ var XYZNonNegativeValues = function (_XYZValues) {
 
 var runtime = createCommonjsModule(function (module) {
 /**
- * Copyright (c) 2014, Facebook, Inc.
- * All rights reserved.
+ * Copyright (c) 2014-present, Facebook, Inc.
  *
- * This source code is licensed under the BSD-style license found in the
- * https://raw.github.com/facebook/regenerator/master/LICENSE file. An
- * additional grant of patent rights can be found in the PATENTS file in
- * the same directory.
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
 !(function(global) {
@@ -13317,10 +13291,6 @@ var runtime = createCommonjsModule(function (module) {
           resolve(result);
         }, reject);
       }
-    }
-
-    if (typeof global.process === "object" && global.process.domain) {
-      invoke = global.process.domain.bind(invoke);
     }
 
     var previousPromise;
@@ -13866,21 +13836,23 @@ var runtime = createCommonjsModule(function (module) {
     }
   };
 })(
-  // Among the various tricks for obtaining a reference to the global
-  // object, this seems to be the most reliable technique that does not
-  // use indirect eval (which violates Content Security Policy).
-  typeof commonjsGlobal === "object" ? commonjsGlobal :
-  typeof window === "object" ? window :
-  typeof self === "object" ? self : commonjsGlobal
+  // In sloppy mode, unbound `this` refers to the global object, fallback to
+  // Function constructor if we're in global strict mode. That is sadly a form
+  // of indirect eval which violates Content Security Policy.
+  (function() { return this })() || Function("return this")()
 );
 });
 
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 // This method of obtaining a reference to the global object needs to be
 // kept identical to the way it is obtained in runtime.js
-var g =
-  typeof commonjsGlobal === "object" ? commonjsGlobal :
-  typeof window === "object" ? window :
-  typeof self === "object" ? self : commonjsGlobal;
+var g = (function() { return this })() || Function("return this")();
 
 // Use `getOwnPropertyNames` because not all browsers support calling
 // `hasOwnProperty` on the global `self` object in a worker. See #183.
@@ -13988,7 +13960,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 
 exports.default = function () {
-    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
+    var _ref = (_asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
         return _regenerator2.default.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
@@ -14244,8 +14216,6 @@ if ( Object.assign === undefined ) {
 	( function () {
 
 		Object.assign = function ( target ) {
-
-			'use strict';
 			var arguments$1 = arguments;
 
 
@@ -14371,7 +14341,7 @@ Object.assign( EventDispatcher.prototype, {
 
 } );
 
-var REVISION = '88';
+var REVISION = '89dev';
 var CullFaceNone = 0;
 var CullFaceBack = 1;
 var CullFaceFront = 2;
@@ -14501,44 +14471,32 @@ var _Math = {
 	DEG2RAD: Math.PI / 180,
 	RAD2DEG: 180 / Math.PI,
 
-	generateUUID: function () {
+	generateUUID: ( function () {
 
-		// http://www.broofa.com/Tools/Math.uuid.htm
-		// Replaced .join with string concatenation (@takahirox)
+		// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/21963136#21963136
 
-		var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split( '' );
-		var rnd = 0, r;
+		var lut = [];
 
-		return function generateUUID() {
+		for ( var i = 0; i < 256; i ++ ) {
 
-			var uuid = '';
+			lut[ i ] = ( i < 16 ? '0' : '' ) + ( i ).toString( 16 ).toUpperCase();
 
-			for ( var i = 0; i < 36; i ++ ) {
+		}
 
-				if ( i === 8 || i === 13 || i === 18 || i === 23 ) {
+		return function () {
 
-					uuid += '-';
-
-				} else if ( i === 14 ) {
-
-					uuid += '4';
-
-				} else {
-
-					if ( rnd <= 0x02 ) { rnd = 0x2000000 + ( Math.random() * 0x1000000 ) | 0; }
-					r = rnd & 0xf;
-					rnd = rnd >> 4;
-					uuid += chars[ ( i === 19 ) ? ( r & 0x3 ) | 0x8 : r ];
-
-				}
-
-			}
-
-			return uuid;
+			var d0 = Math.random() * 0xffffffff | 0;
+			var d1 = Math.random() * 0xffffffff | 0;
+			var d2 = Math.random() * 0xffffffff | 0;
+			var d3 = Math.random() * 0xffffffff | 0;
+			return lut[ d0 & 0xff ] + lut[ d0 >> 8 & 0xff ] + lut[ d0 >> 16 & 0xff ] + lut[ d0 >> 24 & 0xff ] + '-' +
+				lut[ d1 & 0xff ] + lut[ d1 >> 8 & 0xff ] + '-' + lut[ d1 >> 16 & 0x0f | 0x40 ] + lut[ d1 >> 24 & 0xff ] + '-' +
+				lut[ d2 & 0x3f | 0x80 ] + lut[ d2 >> 8 & 0xff ] + '-' + lut[ d2 >> 16 & 0xff ] + lut[ d2 >> 24 & 0xff ] +
+				lut[ d3 & 0xff ] + lut[ d3 >> 8 & 0xff ] + lut[ d3 >> 16 & 0xff ] + lut[ d3 >> 24 & 0xff ];
 
 		};
 
-	}(),
+	} )(),
 
 	clamp: function ( value, min, max ) {
 
@@ -17845,17 +17803,7 @@ function Texture( image, mapping, wrapS, wrapT, magFilter, minFilter, format, ty
 Texture.DEFAULT_IMAGE = undefined;
 Texture.DEFAULT_MAPPING = UVMapping;
 
-Object.defineProperty( Texture.prototype, "needsUpdate", {
-
-	set: function ( value ) {
-
-		if ( value === true ) { this.version ++; }
-
-	}
-
-} );
-
-Object.assign( Texture.prototype, EventDispatcher.prototype, {
+Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 
 	constructor: Texture,
 
@@ -18095,6 +18043,16 @@ Object.assign( Texture.prototype, EventDispatcher.prototype, {
 			uv.y = 1 - uv.y;
 
 		}
+
+	}
+
+} );
+
+Object.defineProperty( Texture.prototype, "needsUpdate", {
+
+	set: function ( value ) {
+
+		if ( value === true ) { this.version ++; }
 
 	}
 
@@ -18762,7 +18720,9 @@ function WebGLRenderTarget( width, height, options ) {
 
 }
 
-Object.assign( WebGLRenderTarget.prototype, EventDispatcher.prototype, {
+WebGLRenderTarget.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+
+	constructor: WebGLRenderTarget,
 
 	isWebGLRenderTarget: true,
 
@@ -21887,7 +21847,9 @@ function Material() {
 
 }
 
-Object.assign( Material.prototype, EventDispatcher.prototype, {
+Material.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+
+	constructor: Material,
 
 	isMaterial: true,
 
@@ -24479,7 +24441,9 @@ function Object3D() {
 Object3D.DefaultUp = new Vector3( 0, 1, 0 );
 Object3D.DefaultMatrixAutoUpdate = true;
 
-Object.assign( Object3D.prototype, EventDispatcher.prototype, {
+Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+
+	constructor: Object3D,
 
 	isObject3D: true,
 
@@ -25504,7 +25468,9 @@ function Geometry() {
 
 }
 
-Object.assign( Geometry.prototype, EventDispatcher.prototype, {
+Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+
+	constructor: Geometry,
 
 	isGeometry: true,
 
@@ -27654,7 +27620,9 @@ function BufferGeometry() {
 
 }
 
-Object.assign( BufferGeometry.prototype, EventDispatcher.prototype, {
+BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+
+	constructor: BufferGeometry,
 
 	isBufferGeometry: true,
 
@@ -31751,14 +31719,14 @@ function getEncodingComponents( encoding ) {
 function getTexelDecodingFunction( functionName, encoding ) {
 
 	var components = getEncodingComponents( encoding );
-	return "vec4 " + functionName + "( vec4 value ) { return " + components[ 0 ] + "ToLinear" + components[ 1 ] + "; }";
+	return 'vec4 ' + functionName + '( vec4 value ) { return ' + components[ 0 ] + 'ToLinear' + components[ 1 ] + '; }';
 
 }
 
 function getTexelEncodingFunction( functionName, encoding ) {
 
 	var components = getEncodingComponents( encoding );
-	return "vec4 " + functionName + "( vec4 value ) { return LinearTo" + components[ 0 ] + components[ 1 ] + "; }";
+	return 'vec4 ' + functionName + '( vec4 value ) { return LinearTo' + components[ 0 ] + components[ 1 ] + '; }';
 
 }
 
@@ -31769,19 +31737,19 @@ function getToneMappingFunction( functionName, toneMapping ) {
 	switch ( toneMapping ) {
 
 		case LinearToneMapping:
-			toneMappingName = "Linear";
+			toneMappingName = 'Linear';
 			break;
 
 		case ReinhardToneMapping:
-			toneMappingName = "Reinhard";
+			toneMappingName = 'Reinhard';
 			break;
 
 		case Uncharted2ToneMapping:
-			toneMappingName = "Uncharted2";
+			toneMappingName = 'Uncharted2';
 			break;
 
 		case CineonToneMapping:
-			toneMappingName = "OptimizedCineon";
+			toneMappingName = 'OptimizedCineon';
 			break;
 
 		default:
@@ -31789,7 +31757,7 @@ function getToneMappingFunction( functionName, toneMapping ) {
 
 	}
 
-	return "vec3 " + functionName + "( vec3 color ) { return " + toneMappingName + "ToneMapping( color ); }";
+	return 'vec3 ' + functionName + '( vec3 color ) { return ' + toneMappingName + 'ToneMapping( color ); }';
 
 }
 
@@ -32182,9 +32150,9 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters 
 			parameters.shadowMapEnabled ? '#define USE_SHADOWMAP' : '',
 			parameters.shadowMapEnabled ? '#define ' + shadowMapTypeDefine : '',
 
-			parameters.premultipliedAlpha ? "#define PREMULTIPLIED_ALPHA" : '',
+			parameters.premultipliedAlpha ? '#define PREMULTIPLIED_ALPHA' : '',
 
-			parameters.physicallyCorrectLights ? "#define PHYSICALLY_CORRECT_LIGHTS" : '',
+			parameters.physicallyCorrectLights ? '#define PHYSICALLY_CORRECT_LIGHTS' : '',
 
 			parameters.logarithmicDepthBuffer ? '#define USE_LOGDEPTHBUF' : '',
 			parameters.logarithmicDepthBuffer && extensions.get( 'EXT_frag_depth' ) ? '#define USE_LOGDEPTHBUF_EXT' : '',
@@ -32194,9 +32162,9 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters 
 			'uniform mat4 viewMatrix;',
 			'uniform vec3 cameraPosition;',
 
-			( parameters.toneMapping !== NoToneMapping ) ? "#define TONE_MAPPING" : '',
+			( parameters.toneMapping !== NoToneMapping ) ? '#define TONE_MAPPING' : '',
 			( parameters.toneMapping !== NoToneMapping ) ? ShaderChunk[ 'tonemapping_pars_fragment' ] : '', // this code is required here because it is used by the toneMapping() function defined below
-			( parameters.toneMapping !== NoToneMapping ) ? getToneMappingFunction( "toneMapping", parameters.toneMapping ) : '',
+			( parameters.toneMapping !== NoToneMapping ) ? getToneMappingFunction( 'toneMapping', parameters.toneMapping ) : '',
 
 			parameters.dithering ? '#define DITHERING' : '',
 
@@ -32204,9 +32172,9 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters 
 			parameters.mapEncoding ? getTexelDecodingFunction( 'mapTexelToLinear', parameters.mapEncoding ) : '',
 			parameters.envMapEncoding ? getTexelDecodingFunction( 'envMapTexelToLinear', parameters.envMapEncoding ) : '',
 			parameters.emissiveMapEncoding ? getTexelDecodingFunction( 'emissiveMapTexelToLinear', parameters.emissiveMapEncoding ) : '',
-			parameters.outputEncoding ? getTexelEncodingFunction( "linearToOutputTexel", parameters.outputEncoding ) : '',
+			parameters.outputEncoding ? getTexelEncodingFunction( 'linearToOutputTexel', parameters.outputEncoding ) : '',
 
-			parameters.depthPacking ? "#define DEPTH_PACKING " + material.depthPacking : '',
+			parameters.depthPacking ? '#define DEPTH_PACKING ' + material.depthPacking : '',
 
 			'\n'
 
@@ -32698,6 +32666,7 @@ function WebGLPrograms( renderer, extensions, capabilities ) {
 function WebGLTextures( _gl, extensions, state, properties, capabilities, utils, infoMemory ) {
 
 	var _isWebGL2 = ( typeof WebGL2RenderingContext !== 'undefined' && _gl instanceof window.WebGL2RenderingContext );
+	var _videoTextures = {};
 
 	//
 
@@ -32792,8 +32761,13 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 		deallocateTexture( texture );
 
-		infoMemory.textures --;
+		if ( texture.isVideoTexture ) {
 
+			delete _videoTextures[ texture.id ];
+
+		}
+
+		infoMemory.textures --;
 
 	}
 
@@ -33094,6 +33068,12 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 			texture.addEventListener( 'dispose', onTextureDispose );
 
 			textureProperties.__webglTexture = _gl.createTexture();
+
+			if ( texture.isVideoTexture ) {
+
+				_videoTextures[ texture.id ] = texture;
+
+			}
 
 			infoMemory.textures ++;
 
@@ -33476,11 +33456,22 @@ function WebGLTextures( _gl, extensions, state, properties, capabilities, utils,
 
 	}
 
+	function updateVideoTextures() {
+
+		for ( var id in _videoTextures ) {
+
+			_videoTextures[ id ].update();
+
+		}
+
+	}
+
 	this.setTexture2D = setTexture2D;
 	this.setTextureCube = setTextureCube;
 	this.setTextureCubeDynamic = setTextureCubeDynamic;
 	this.setupRenderTarget = setupRenderTarget;
 	this.updateRenderTargetMipmap = updateRenderTargetMipmap;
+	this.updateVideoTextures = updateVideoTextures;
 
 }
 
@@ -34173,13 +34164,16 @@ function WebGLState( gl, extensions, utils ) {
 
 	}
 
-	function setMaterial( material ) {
+	function setMaterial( material, frontFaceCW ) {
 
 		material.side === DoubleSide
 			? disable( gl.CULL_FACE )
 			: enable( gl.CULL_FACE );
 
-		setFlipSided( material.side === BackSide );
+		var flipSided = ( material.side === BackSide );
+		if ( frontFaceCW ) { flipSided = ! flipSided; }
+
+		setFlipSided( flipSided );
 
 		material.transparent === true
 			? setBlending( material.blending, material.blendEquation, material.blendSrc, material.blendDst, material.blendEquationAlpha, material.blendSrcAlpha, material.blendDstAlpha, material.premultipliedAlpha )
@@ -34850,6 +34844,8 @@ function WebVRManager( renderer ) {
 	var device = null;
 	var frameData = null;
 
+	var poseTarget = null;
+
 	if ( typeof window !== 'undefined' && 'VRFrameData' in window ) {
 
 		frameData = new window.VRFrameData();
@@ -34857,9 +34853,6 @@ function WebVRManager( renderer ) {
 	}
 
 	var matrixWorldInverse = new Matrix4();
-
-	var standingMatrix = new Matrix4();
-	var standingMatrixInverse = new Matrix4();
 
 	var cameraL = new PerspectiveCamera();
 	cameraL.bounds = new Vector4( 0.0, 0.0, 0.5, 1.0 );
@@ -34907,7 +34900,6 @@ function WebVRManager( renderer ) {
 	//
 
 	this.enabled = false;
-	this.standing = false;
 
 	this.getDevice = function () {
 
@@ -34918,6 +34910,12 @@ function WebVRManager( renderer ) {
 	this.setDevice = function ( value ) {
 
 		if ( value !== undefined ) { device = value; }
+
+	};
+
+	this.setPoseTarget = function ( object ) {
+
+		if ( object !== undefined ) { poseTarget = object; }
 
 	};
 
@@ -34933,36 +34931,25 @@ function WebVRManager( renderer ) {
 		//
 
 		var pose = frameData.pose;
+		var poseObject = poseTarget !== null ? poseTarget : camera;
 
 		if ( pose.position !== null ) {
 
-			camera.position.fromArray( pose.position );
+			poseObject.position.fromArray( pose.position );
 
 		} else {
 
-			camera.position.set( 0, 0, 0 );
+			poseObject.position.set( 0, 0, 0 );
 
 		}
 
 		if ( pose.orientation !== null ) {
 
-			camera.quaternion.fromArray( pose.orientation );
+			poseObject.quaternion.fromArray( pose.orientation );
 
 		}
 
-		camera.updateMatrixWorld();
-
-		var stageParameters = device.stageParameters;
-
-		if ( this.standing && stageParameters ) {
-
-			standingMatrix.fromArray( stageParameters.sittingToStandingTransform );
-			standingMatrixInverse.getInverse( standingMatrix );
-
-			camera.matrixWorld.multiply( standingMatrix );
-			camera.matrixWorldInverse.multiply( standingMatrixInverse );
-
-		}
+		poseObject.updateMatrixWorld();
 
 		if ( device.isPresenting === false ) { return camera; }
 
@@ -34980,14 +34967,7 @@ function WebVRManager( renderer ) {
 		cameraL.matrixWorldInverse.fromArray( frameData.leftViewMatrix );
 		cameraR.matrixWorldInverse.fromArray( frameData.rightViewMatrix );
 
-		if ( this.standing && stageParameters ) {
-
-			cameraL.matrixWorldInverse.multiply( standingMatrixInverse );
-			cameraR.matrixWorldInverse.multiply( standingMatrixInverse );
-
-		}
-
-		var parent = camera.parent;
+		var parent = poseObject.parent;
 
 		if ( parent !== null ) {
 
@@ -35034,12 +35014,6 @@ function WebVRManager( renderer ) {
 		}
 
 		return cameraVR;
-
-	};
-
-	this.getStandingMatrix = function () {
-
-		return standingMatrix;
 
 	};
 
@@ -35441,7 +35415,8 @@ function WebGLRenderer( parameters ) {
 		_stencil = parameters.stencil !== undefined ? parameters.stencil : true,
 		_antialias = parameters.antialias !== undefined ? parameters.antialias : false,
 		_premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true,
-		_preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false;
+		_preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false,
+		_powerPreference = parameters.powerPreference !== undefined ? parameters.powerPreference : 'default';
 
 	var lightsArray = [];
 	var shadowsArray = [];
@@ -35587,8 +35562,14 @@ function WebGLRenderer( parameters ) {
 			stencil: _stencil,
 			antialias: _antialias,
 			premultipliedAlpha: _premultipliedAlpha,
-			preserveDrawingBuffer: _preserveDrawingBuffer
+			preserveDrawingBuffer: _preserveDrawingBuffer,
+			powerPreference: _powerPreference
 		};
+
+		// event listeners must be registered before WebGL context is created, see #12753
+
+		_canvas.addEventListener( 'webglcontextlost', onContextLost, false );
+		_canvas.addEventListener( 'webglcontextrestored', onContextRestore, false );
 
 		_gl = _context || _canvas.getContext( 'webgl', contextAttributes ) || _canvas.getContext( 'experimental-webgl', contextAttributes );
 
@@ -35596,11 +35577,11 @@ function WebGLRenderer( parameters ) {
 
 			if ( _canvas.getContext( 'webgl' ) !== null ) {
 
-				throw 'Error creating WebGL context with your selected attributes.';
+				throw new Error( 'Error creating WebGL context with your selected attributes.' );
 
 			} else {
 
-				throw 'Error creating WebGL context.';
+				throw new Error( 'Error creating WebGL context.' );
 
 			}
 
@@ -35618,12 +35599,9 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		_canvas.addEventListener( 'webglcontextlost', onContextLost, false );
-		_canvas.addEventListener( 'webglcontextrestored', onContextRestore, false );
-
 	} catch ( error ) {
 
-		console.error( 'THREE.WebGLRenderer: ' + error );
+		console.error( 'THREE.WebGLRenderer: ' + error.message );
 
 	}
 
@@ -36064,7 +36042,9 @@ function WebGLRenderer( parameters ) {
 
 	this.renderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
 
-		state.setMaterial( material );
+		var frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
+
+		state.setMaterial( material, frontFaceCW );
 
 		var program = setProgram( camera, fog, material, object );
 		var geometryProgram = geometry.id + '_' + program.id + '_' + ( material.wireframe === true );
@@ -36414,7 +36394,7 @@ function WebGLRenderer( parameters ) {
 		if ( isAnimating ) { return; }
 
 		var device = vr.getDevice();
-		
+
 		if ( device && device.isPresenting ) {
 
 			device.requestAnimationFrame( loop );
@@ -36434,7 +36414,7 @@ function WebGLRenderer( parameters ) {
 		if ( onAnimationFrame !== null ) { onAnimationFrame( time ); }
 
 		var device = vr.getDevice();
-		
+
 		if ( device && device.isPresenting ) {
 
 			device.requestAnimationFrame( loop );
@@ -36509,6 +36489,10 @@ function WebGLRenderer( parameters ) {
 			currentRenderList.sort();
 
 		}
+
+		//
+
+		textures.updateVideoTextures();
 
 		//
 
@@ -36809,7 +36793,9 @@ function WebGLRenderer( parameters ) {
 
 		if ( object.isImmediateRenderObject ) {
 
-			state.setMaterial( material );
+			var frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
+
+			state.setMaterial( material, frontFaceCW );
 
 			var program = setProgram( camera, scene.fog, material, object );
 
@@ -39310,7 +39296,9 @@ function Group() {
 
 Group.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
-	constructor: Group
+	constructor: Group,
+
+	isGroup: true
 
 } );
 
@@ -39324,28 +39312,40 @@ function VideoTexture( video, mapping, wrapS, wrapT, magFilter, minFilter, forma
 
 	this.generateMipmaps = false;
 
+	// Set needsUpdate when first frame is ready
+
 	var scope = this;
 
-	function update() {
+	function onLoaded() {
 
-		var video = scope.image;
-
-		if ( video.readyState >= video.HAVE_CURRENT_DATA ) {
-
-			scope.needsUpdate = true;
-
-		}
-
-		requestAnimationFrame( update );
+		video.removeEventListener( 'loadeddata', onLoaded, false );
+		scope.needsUpdate = true;
 
 	}
 
-	requestAnimationFrame( update );
+	video.addEventListener( 'loadeddata', onLoaded, false );
 
 }
 
-VideoTexture.prototype = Object.create( Texture.prototype );
-VideoTexture.prototype.constructor = VideoTexture;
+VideoTexture.prototype = Object.assign( Object.create( Texture.prototype ), {
+
+	constructor: VideoTexture,
+
+	isVideoTexture: true,
+
+	update: function () {
+
+		var video = this.image;
+
+		if ( video.readyState >= video.HAVE_CURRENT_DATA ) {
+
+			this.needsUpdate = true;
+
+		}
+
+	}
+
+} );
 
 /**
  * @author alteredq / http://alteredqualia.com/
@@ -40852,6 +40852,815 @@ TorusBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
 TorusBufferGeometry.prototype.constructor = TorusBufferGeometry;
 
 /**
+ * @author Mugen87 / https://github.com/Mugen87
+ * Port from https://github.com/mapbox/earcut (v2.1.2)
+ */
+
+var Earcut = {
+
+	triangulate: function ( data, holeIndices, dim ) {
+
+		dim = dim || 2;
+
+		var hasHoles = holeIndices && holeIndices.length,
+			outerLen = hasHoles ? holeIndices[ 0 ] * dim : data.length,
+			outerNode = linkedList( data, 0, outerLen, dim, true ),
+			triangles = [];
+
+		if ( ! outerNode ) { return triangles; }
+
+		var minX, minY, maxX, maxY, x, y, invSize;
+
+		if ( hasHoles ) { outerNode = eliminateHoles( data, holeIndices, outerNode, dim ); }
+
+		// if the shape is not too simple, we'll use z-order curve hash later; calculate polygon bbox
+
+		if ( data.length > 80 * dim ) {
+
+			minX = maxX = data[ 0 ];
+			minY = maxY = data[ 1 ];
+
+			for ( var i = dim; i < outerLen; i += dim ) {
+
+				x = data[ i ];
+				y = data[ i + 1 ];
+				if ( x < minX ) { minX = x; }
+				if ( y < minY ) { minY = y; }
+				if ( x > maxX ) { maxX = x; }
+				if ( y > maxY ) { maxY = y; }
+
+			}
+
+			// minX, minY and invSize are later used to transform coords into integers for z-order calculation
+
+			invSize = Math.max( maxX - minX, maxY - minY );
+			invSize = invSize !== 0 ? 1 / invSize : 0;
+
+		}
+
+		earcutLinked( outerNode, triangles, dim, minX, minY, invSize );
+
+		return triangles;
+
+	}
+
+};
+
+// create a circular doubly linked list from polygon points in the specified winding order
+
+function linkedList( data, start, end, dim, clockwise ) {
+
+	var i, last;
+
+	if ( clockwise === ( signedArea( data, start, end, dim ) > 0 ) ) {
+
+		for ( i = start; i < end; i += dim ) { last = insertNode( i, data[ i ], data[ i + 1 ], last ); }
+
+	} else {
+
+		for ( i = end - dim; i >= start; i -= dim ) { last = insertNode( i, data[ i ], data[ i + 1 ], last ); }
+
+	}
+
+	if ( last && equals( last, last.next ) ) {
+
+		removeNode( last );
+		last = last.next;
+
+	}
+
+	return last;
+
+}
+
+// eliminate colinear or duplicate points
+
+function filterPoints( start, end ) {
+
+	if ( ! start ) { return start; }
+	if ( ! end ) { end = start; }
+
+	var p = start, again;
+
+	do {
+
+		again = false;
+
+		if ( ! p.steiner && ( equals( p, p.next ) || area( p.prev, p, p.next ) === 0 ) ) {
+
+			removeNode( p );
+			p = end = p.prev;
+			if ( p === p.next ) { break; }
+			again = true;
+
+		} else {
+
+			p = p.next;
+
+		}
+
+	} while ( again || p !== end );
+
+	return end;
+
+}
+
+// main ear slicing loop which triangulates a polygon (given as a linked list)
+
+function earcutLinked( ear, triangles, dim, minX, minY, invSize, pass ) {
+
+	if ( ! ear ) { return; }
+
+	// interlink polygon nodes in z-order
+
+	if ( ! pass && invSize ) { indexCurve( ear, minX, minY, invSize ); }
+
+	var stop = ear, prev, next;
+
+	// iterate through ears, slicing them one by one
+
+	while ( ear.prev !== ear.next ) {
+
+		prev = ear.prev;
+		next = ear.next;
+
+		if ( invSize ? isEarHashed( ear, minX, minY, invSize ) : isEar( ear ) ) {
+
+			// cut off the triangle
+			triangles.push( prev.i / dim );
+			triangles.push( ear.i / dim );
+			triangles.push( next.i / dim );
+
+			removeNode( ear );
+
+			// skipping the next vertice leads to less sliver triangles
+			ear = next.next;
+			stop = next.next;
+
+			continue;
+
+		}
+
+		ear = next;
+
+		// if we looped through the whole remaining polygon and can't find any more ears
+
+		if ( ear === stop ) {
+
+			// try filtering points and slicing again
+
+			if ( ! pass ) {
+
+				earcutLinked( filterPoints( ear ), triangles, dim, minX, minY, invSize, 1 );
+
+				// if this didn't work, try curing all small self-intersections locally
+
+			} else if ( pass === 1 ) {
+
+				ear = cureLocalIntersections( ear, triangles, dim );
+				earcutLinked( ear, triangles, dim, minX, minY, invSize, 2 );
+
+			// as a last resort, try splitting the remaining polygon into two
+
+			} else if ( pass === 2 ) {
+
+				splitEarcut( ear, triangles, dim, minX, minY, invSize );
+
+			}
+
+			break;
+
+		}
+
+	}
+
+}
+
+// check whether a polygon node forms a valid ear with adjacent nodes
+
+function isEar( ear ) {
+
+	var a = ear.prev,
+		b = ear,
+		c = ear.next;
+
+	if ( area( a, b, c ) >= 0 ) { return false; } // reflex, can't be an ear
+
+	// now make sure we don't have other points inside the potential ear
+	var p = ear.next.next;
+
+	while ( p !== ear.prev ) {
+
+		if ( pointInTriangle( a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y ) && area( p.prev, p, p.next ) >= 0 ) {
+
+			return false;
+
+		}
+
+		p = p.next;
+
+	}
+
+	return true;
+
+}
+
+function isEarHashed( ear, minX, minY, invSize ) {
+
+	var a = ear.prev,
+		b = ear,
+		c = ear.next;
+
+	if ( area( a, b, c ) >= 0 ) { return false; } // reflex, can't be an ear
+
+	// triangle bbox; min & max are calculated like this for speed
+
+	var minTX = a.x < b.x ? ( a.x < c.x ? a.x : c.x ) : ( b.x < c.x ? b.x : c.x ),
+		minTY = a.y < b.y ? ( a.y < c.y ? a.y : c.y ) : ( b.y < c.y ? b.y : c.y ),
+		maxTX = a.x > b.x ? ( a.x > c.x ? a.x : c.x ) : ( b.x > c.x ? b.x : c.x ),
+		maxTY = a.y > b.y ? ( a.y > c.y ? a.y : c.y ) : ( b.y > c.y ? b.y : c.y );
+
+	// z-order range for the current triangle bbox;
+
+	var minZ = zOrder( minTX, minTY, minX, minY, invSize ),
+		maxZ = zOrder( maxTX, maxTY, minX, minY, invSize );
+
+	// first look for points inside the triangle in increasing z-order
+
+	var p = ear.nextZ;
+
+	while ( p && p.z <= maxZ ) {
+
+		if ( p !== ear.prev && p !== ear.next &&
+				pointInTriangle( a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y ) &&
+				area( p.prev, p, p.next ) >= 0 ) { return false; }
+		p = p.nextZ;
+
+	}
+
+	// then look for points in decreasing z-order
+
+	p = ear.prevZ;
+
+	while ( p && p.z >= minZ ) {
+
+		if ( p !== ear.prev && p !== ear.next &&
+				pointInTriangle( a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y ) &&
+				area( p.prev, p, p.next ) >= 0 ) { return false; }
+
+		p = p.prevZ;
+
+	}
+
+	return true;
+
+}
+
+// go through all polygon nodes and cure small local self-intersections
+
+function cureLocalIntersections( start, triangles, dim ) {
+
+	var p = start;
+
+	do {
+
+		var a = p.prev, b = p.next.next;
+
+		if ( ! equals( a, b ) && intersects( a, p, p.next, b ) && locallyInside( a, b ) && locallyInside( b, a ) ) {
+
+			triangles.push( a.i / dim );
+			triangles.push( p.i / dim );
+			triangles.push( b.i / dim );
+
+			// remove two nodes involved
+
+			removeNode( p );
+			removeNode( p.next );
+
+			p = start = b;
+
+		}
+
+		p = p.next;
+
+	} while ( p !== start );
+
+	return p;
+
+}
+
+// try splitting polygon into two and triangulate them independently
+
+function splitEarcut( start, triangles, dim, minX, minY, invSize ) {
+
+	// look for a valid diagonal that divides the polygon into two
+
+	var a = start;
+
+	do {
+
+		var b = a.next.next;
+
+		while ( b !== a.prev ) {
+
+			if ( a.i !== b.i && isValidDiagonal( a, b ) ) {
+
+				// split the polygon in two by the diagonal
+
+				var c = splitPolygon( a, b );
+
+				// filter colinear points around the cuts
+
+				a = filterPoints( a, a.next );
+				c = filterPoints( c, c.next );
+
+				// run earcut on each half
+
+				earcutLinked( a, triangles, dim, minX, minY, invSize );
+				earcutLinked( c, triangles, dim, minX, minY, invSize );
+				return;
+
+			}
+
+			b = b.next;
+
+		}
+
+		a = a.next;
+
+	} while ( a !== start );
+
+}
+
+// link every hole into the outer loop, producing a single-ring polygon without holes
+
+function eliminateHoles( data, holeIndices, outerNode, dim ) {
+
+	var queue = [], i, len, start, end, list;
+
+	for ( i = 0, len = holeIndices.length; i < len; i ++ ) {
+
+		start = holeIndices[ i ] * dim;
+		end = i < len - 1 ? holeIndices[ i + 1 ] * dim : data.length;
+		list = linkedList( data, start, end, dim, false );
+		if ( list === list.next ) { list.steiner = true; }
+		queue.push( getLeftmost( list ) );
+
+	}
+
+	queue.sort( compareX );
+
+	// process holes from left to right
+
+	for ( i = 0; i < queue.length; i ++ ) {
+
+		eliminateHole( queue[ i ], outerNode );
+		outerNode = filterPoints( outerNode, outerNode.next );
+
+	}
+
+	return outerNode;
+
+}
+
+function compareX( a, b ) {
+
+	return a.x - b.x;
+
+}
+
+// find a bridge between vertices that connects hole with an outer ring and and link it
+
+function eliminateHole( hole, outerNode ) {
+
+	outerNode = findHoleBridge( hole, outerNode );
+
+	if ( outerNode ) {
+
+		var b = splitPolygon( outerNode, hole );
+
+		filterPoints( b, b.next );
+
+	}
+
+}
+
+// David Eberly's algorithm for finding a bridge between hole and outer polygon
+
+function findHoleBridge( hole, outerNode ) {
+
+	var p = outerNode,
+		hx = hole.x,
+		hy = hole.y,
+		qx = - Infinity,
+		m;
+
+	// find a segment intersected by a ray from the hole's leftmost point to the left;
+	// segment's endpoint with lesser x will be potential connection point
+
+	do {
+
+		if ( hy <= p.y && hy >= p.next.y && p.next.y !== p.y ) {
+
+			var x = p.x + ( hy - p.y ) * ( p.next.x - p.x ) / ( p.next.y - p.y );
+
+			if ( x <= hx && x > qx ) {
+
+				qx = x;
+
+				if ( x === hx ) {
+
+					if ( hy === p.y ) { return p; }
+					if ( hy === p.next.y ) { return p.next; }
+
+				}
+
+				m = p.x < p.next.x ? p : p.next;
+
+			}
+
+		}
+
+		p = p.next;
+
+	} while ( p !== outerNode );
+
+	if ( ! m ) { return null; }
+
+	if ( hx === qx ) { return m.prev; } // hole touches outer segment; pick lower endpoint
+
+	// look for points inside the triangle of hole point, segment intersection and endpoint;
+	// if there are no points found, we have a valid connection;
+	// otherwise choose the point of the minimum angle with the ray as connection point
+
+	var stop = m,
+		mx = m.x,
+		my = m.y,
+		tanMin = Infinity,
+		tan;
+
+	p = m.next;
+
+	while ( p !== stop ) {
+
+		if ( hx >= p.x && p.x >= mx && hx !== p.x &&
+						pointInTriangle( hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y ) ) {
+
+			tan = Math.abs( hy - p.y ) / ( hx - p.x ); // tangential
+
+			if ( ( tan < tanMin || ( tan === tanMin && p.x > m.x ) ) && locallyInside( p, hole ) ) {
+
+				m = p;
+				tanMin = tan;
+
+			}
+
+		}
+
+		p = p.next;
+
+	}
+
+	return m;
+
+}
+
+// interlink polygon nodes in z-order
+
+function indexCurve( start, minX, minY, invSize ) {
+
+	var p = start;
+
+	do {
+
+		if ( p.z === null ) { p.z = zOrder( p.x, p.y, minX, minY, invSize ); }
+		p.prevZ = p.prev;
+		p.nextZ = p.next;
+		p = p.next;
+
+	} while ( p !== start );
+
+	p.prevZ.nextZ = null;
+	p.prevZ = null;
+
+	sortLinked( p );
+
+}
+
+// Simon Tatham's linked list merge sort algorithm
+// http://www.chiark.greenend.org.uk/~sgtatham/algorithms/listsort.html
+
+function sortLinked( list ) {
+
+	var i, p, q, e, tail, numMerges, pSize, qSize, inSize = 1;
+
+	do {
+
+		p = list;
+		list = null;
+		tail = null;
+		numMerges = 0;
+
+		while ( p ) {
+
+			numMerges ++;
+			q = p;
+			pSize = 0;
+
+			for ( i = 0; i < inSize; i ++ ) {
+
+				pSize ++;
+				q = q.nextZ;
+				if ( ! q ) { break; }
+
+			}
+
+			qSize = inSize;
+
+			while ( pSize > 0 || ( qSize > 0 && q ) ) {
+
+				if ( pSize !== 0 && ( qSize === 0 || ! q || p.z <= q.z ) ) {
+
+					e = p;
+					p = p.nextZ;
+					pSize --;
+
+				} else {
+
+					e = q;
+					q = q.nextZ;
+					qSize --;
+
+				}
+
+				if ( tail ) { tail.nextZ = e; }
+				else { list = e; }
+
+				e.prevZ = tail;
+				tail = e;
+
+			}
+
+			p = q;
+
+		}
+
+		tail.nextZ = null;
+		inSize *= 2;
+
+	} while ( numMerges > 1 );
+
+	return list;
+
+}
+
+// z-order of a point given coords and inverse of the longer side of data bbox
+
+function zOrder( x, y, minX, minY, invSize ) {
+
+	// coords are transformed into non-negative 15-bit integer range
+
+	x = 32767 * ( x - minX ) * invSize;
+	y = 32767 * ( y - minY ) * invSize;
+
+	x = ( x | ( x << 8 ) ) & 0x00FF00FF;
+	x = ( x | ( x << 4 ) ) & 0x0F0F0F0F;
+	x = ( x | ( x << 2 ) ) & 0x33333333;
+	x = ( x | ( x << 1 ) ) & 0x55555555;
+
+	y = ( y | ( y << 8 ) ) & 0x00FF00FF;
+	y = ( y | ( y << 4 ) ) & 0x0F0F0F0F;
+	y = ( y | ( y << 2 ) ) & 0x33333333;
+	y = ( y | ( y << 1 ) ) & 0x55555555;
+
+	return x | ( y << 1 );
+
+}
+
+// find the leftmost node of a polygon ring
+
+function getLeftmost( start ) {
+
+	var p = start, leftmost = start;
+
+	do {
+
+		if ( p.x < leftmost.x ) { leftmost = p; }
+		p = p.next;
+
+	} while ( p !== start );
+
+	return leftmost;
+
+}
+
+// check if a point lies within a convex triangle
+
+function pointInTriangle( ax, ay, bx, by, cx, cy, px, py ) {
+
+	return ( cx - px ) * ( ay - py ) - ( ax - px ) * ( cy - py ) >= 0 &&
+	 ( ax - px ) * ( by - py ) - ( bx - px ) * ( ay - py ) >= 0 &&
+	 ( bx - px ) * ( cy - py ) - ( cx - px ) * ( by - py ) >= 0;
+
+}
+
+// check if a diagonal between two polygon nodes is valid (lies in polygon interior)
+
+function isValidDiagonal( a, b ) {
+
+	return a.next.i !== b.i && a.prev.i !== b.i && ! intersectsPolygon( a, b ) &&
+		locallyInside( a, b ) && locallyInside( b, a ) && middleInside( a, b );
+
+}
+
+// signed area of a triangle
+
+function area( p, q, r ) {
+
+	return ( q.y - p.y ) * ( r.x - q.x ) - ( q.x - p.x ) * ( r.y - q.y );
+
+}
+
+// check if two points are equal
+
+function equals( p1, p2 ) {
+
+	return p1.x === p2.x && p1.y === p2.y;
+
+}
+
+// check if two segments intersect
+
+function intersects( p1, q1, p2, q2 ) {
+
+	if ( ( equals( p1, q1 ) && equals( p2, q2 ) ) ||
+			( equals( p1, q2 ) && equals( p2, q1 ) ) ) { return true; }
+
+	return area( p1, q1, p2 ) > 0 !== area( p1, q1, q2 ) > 0 &&
+				 area( p2, q2, p1 ) > 0 !== area( p2, q2, q1 ) > 0;
+
+}
+
+// check if a polygon diagonal intersects any polygon segments
+
+function intersectsPolygon( a, b ) {
+
+	var p = a;
+
+	do {
+
+		if ( p.i !== a.i && p.next.i !== a.i && p.i !== b.i && p.next.i !== b.i &&
+						intersects( p, p.next, a, b ) ) {
+
+			return true;
+
+		}
+
+		p = p.next;
+
+	} while ( p !== a );
+
+	return false;
+
+}
+
+// check if a polygon diagonal is locally inside the polygon
+
+function locallyInside( a, b ) {
+
+	return area( a.prev, a, a.next ) < 0 ?
+		area( a, b, a.next ) >= 0 && area( a, a.prev, b ) >= 0 :
+		area( a, b, a.prev ) < 0 || area( a, a.next, b ) < 0;
+
+}
+
+// check if the middle point of a polygon diagonal is inside the polygon
+
+function middleInside( a, b ) {
+
+	var p = a,
+		inside = false,
+		px = ( a.x + b.x ) / 2,
+		py = ( a.y + b.y ) / 2;
+
+	do {
+
+		if ( ( ( p.y > py ) !== ( p.next.y > py ) ) && p.next.y !== p.y &&
+						( px < ( p.next.x - p.x ) * ( py - p.y ) / ( p.next.y - p.y ) + p.x ) ) {
+
+			inside = ! inside;
+
+		}
+
+		p = p.next;
+
+	} while ( p !== a );
+
+	return inside;
+
+}
+
+// link two polygon vertices with a bridge; if the vertices belong to the same ring, it splits polygon into two;
+// if one belongs to the outer ring and another to a hole, it merges it into a single ring
+
+function splitPolygon( a, b ) {
+
+	var a2 = new Node$1( a.i, a.x, a.y ),
+		b2 = new Node$1( b.i, b.x, b.y ),
+		an = a.next,
+		bp = b.prev;
+
+	a.next = b;
+	b.prev = a;
+
+	a2.next = an;
+	an.prev = a2;
+
+	b2.next = a2;
+	a2.prev = b2;
+
+	bp.next = b2;
+	b2.prev = bp;
+
+	return b2;
+
+}
+
+// create a node and optionally link it with previous one (in a circular doubly linked list)
+
+function insertNode( i, x, y, last ) {
+
+	var p = new Node$1( i, x, y );
+
+	if ( ! last ) {
+
+		p.prev = p;
+		p.next = p;
+
+	} else {
+
+		p.next = last.next;
+		p.prev = last;
+		last.next.prev = p;
+		last.next = p;
+
+	}
+
+	return p;
+
+}
+
+function removeNode( p ) {
+
+	p.next.prev = p.prev;
+	p.prev.next = p.next;
+
+	if ( p.prevZ ) { p.prevZ.nextZ = p.nextZ; }
+	if ( p.nextZ ) { p.nextZ.prevZ = p.prevZ; }
+
+}
+
+function Node$1( i, x, y ) {
+
+	// vertice index in coordinates array
+	this.i = i;
+
+	// vertex coordinates
+	this.x = x;
+	this.y = y;
+
+	// previous and next vertice nodes in a polygon ring
+	this.prev = null;
+	this.next = null;
+
+	// z-order curve value
+	this.z = null;
+
+	// previous and next nodes in z-order
+	this.prevZ = null;
+	this.nextZ = null;
+
+	// indicates whether this is a steiner point
+	this.steiner = false;
+
+}
+
+function signedArea( data, start, end, dim ) {
+
+	var sum = 0;
+
+	for ( var i = start, j = end - dim; i < end; i += dim ) {
+
+		sum += ( data[ j ] - data[ i ] ) * ( data[ i + 1 ] + data[ j + 1 ] );
+		j = i;
+
+	}
+
+	return sum;
+
+}
+
+/**
  * @author zz85 / http://www.lab4games.net/zz85/blog
  */
 
@@ -40874,173 +41683,11 @@ var ShapeUtils = {
 
 	},
 
-	triangulate: ( function () {
+	isClockWise: function ( pts ) {
 
-		/**
-		 * This code is a quick port of code written in C++ which was submitted to
-		 * flipcode.com by John W. Ratcliff  // July 22, 2000
-		 * See original code and more information here:
-		 * http://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
-		 *
-		 * ported to actionscript by Zevan Rosser
-		 * www.actionsnippet.com
-		 *
-		 * ported to javascript by Joshua Koo
-		 * http://www.lab4games.net/zz85/blog
-		 *
-		 */
+		return ShapeUtils.area( pts ) < 0;
 
-		function snip( contour, u, v, w, n, verts ) {
-
-			var p;
-			var ax, ay, bx, by;
-			var cx, cy, px, py;
-
-			ax = contour[ verts[ u ] ].x;
-			ay = contour[ verts[ u ] ].y;
-
-			bx = contour[ verts[ v ] ].x;
-			by = contour[ verts[ v ] ].y;
-
-			cx = contour[ verts[ w ] ].x;
-			cy = contour[ verts[ w ] ].y;
-
-			if ( ( bx - ax ) * ( cy - ay ) - ( by - ay ) * ( cx - ax ) <= 0 ) { return false; }
-
-			var aX, aY, bX, bY, cX, cY;
-			var apx, apy, bpx, bpy, cpx, cpy;
-			var cCROSSap, bCROSScp, aCROSSbp;
-
-			aX = cx - bx; aY = cy - by;
-			bX = ax - cx; bY = ay - cy;
-			cX = bx - ax; cY = by - ay;
-
-			for ( p = 0; p < n; p ++ ) {
-
-				px = contour[ verts[ p ] ].x;
-				py = contour[ verts[ p ] ].y;
-
-				if ( ( ( px === ax ) && ( py === ay ) ) ||
-					 ( ( px === bx ) && ( py === by ) ) ||
-					 ( ( px === cx ) && ( py === cy ) ) )	{ continue; }
-
-				apx = px - ax; apy = py - ay;
-				bpx = px - bx; bpy = py - by;
-				cpx = px - cx; cpy = py - cy;
-
-				// see if p is inside triangle abc
-
-				aCROSSbp = aX * bpy - aY * bpx;
-				cCROSSap = cX * apy - cY * apx;
-				bCROSScp = bX * cpy - bY * cpx;
-
-				if ( ( aCROSSbp >= - Number.EPSILON ) && ( bCROSScp >= - Number.EPSILON ) && ( cCROSSap >= - Number.EPSILON ) ) { return false; }
-
-			}
-
-			return true;
-
-		}
-
-		// takes in an contour array and returns
-
-		return function triangulate( contour, indices ) {
-
-			var n = contour.length;
-
-			if ( n < 3 ) { return null; }
-
-			var result = [],
-				verts = [],
-				vertIndices = [];
-
-			/* we want a counter-clockwise polygon in verts */
-
-			var u, v, w;
-
-			if ( ShapeUtils.area( contour ) > 0.0 ) {
-
-				for ( v = 0; v < n; v ++ ) { verts[ v ] = v; }
-
-			} else {
-
-				for ( v = 0; v < n; v ++ ) { verts[ v ] = ( n - 1 ) - v; }
-
-			}
-
-			var nv = n;
-
-			/*  remove nv - 2 vertices, creating 1 triangle every time */
-
-			var count = 2 * nv; /* error detection */
-
-			for ( v = nv - 1; nv > 2; ) {
-
-				/* if we loop, it is probably a non-simple polygon */
-
-				if ( ( count -- ) <= 0 ) {
-
-					//** Triangulate: ERROR - probable bad polygon!
-
-					//throw ( "Warning, unable to triangulate polygon!" );
-					//return null;
-					// Sometimes warning is fine, especially polygons are triangulated in reverse.
-					console.warn( 'THREE.ShapeUtils: Unable to triangulate polygon! in triangulate()' );
-
-					if ( indices ) { return vertIndices; }
-					return result;
-
-				}
-
-				/* three consecutive vertices in current polygon, <u,v,w> */
-
-				u = v; if ( nv <= u ) { u = 0; } /* previous */
-				v = u + 1; if ( nv <= v ) { v = 0; } /* new v    */
-				w = v + 1; if ( nv <= w ) { w = 0; } /* next     */
-
-				if ( snip( contour, u, v, w, nv, verts ) ) {
-
-					var a, b, c, s, t;
-
-					/* true names of the vertices */
-
-					a = verts[ u ];
-					b = verts[ v ];
-					c = verts[ w ];
-
-					/* output Triangle */
-
-					result.push( [ contour[ a ],
-						contour[ b ],
-						contour[ c ] ] );
-
-
-					vertIndices.push( [ verts[ u ], verts[ v ], verts[ w ] ] );
-
-					/* remove v from the remaining polygon */
-
-					for ( s = v, t = v + 1; t < nv; s ++, t ++ ) {
-
-						verts[ s ] = verts[ t ];
-
-					}
-
-					nv --;
-
-					/* reset error detection counter */
-
-					count = 2 * nv;
-
-				}
-
-			}
-
-			if ( indices ) { return vertIndices; }
-			return result;
-
-		};
-
-	} )(),
+	},
 
 	triangulateShape: function ( contour, holes ) {
 
@@ -41056,488 +41703,50 @@ var ShapeUtils = {
 
 		}
 
+		function addContour( vertices, contour ) {
+
+			for ( var i = 0; i < contour.length; i ++ ) {
+
+				vertices.push( contour[ i ].x );
+				vertices.push( contour[ i ].y );
+
+			}
+
+		}
+
+		var vertices = []; // flat array of vertices like [ x0,y0, x1,y1, x2,y2, ... ]
+		var holeIndices = []; // array of hole indices
+		var faces = []; // final array of vertex indices like [ [ a,b,d ], [ b,c,d ] ]
+
 		removeDupEndPts( contour );
+		addContour( vertices, contour );
+
+		//
+
+		var holeIndex = contour.length;
 		holes.forEach( removeDupEndPts );
 
-		function point_in_segment_2D_colin( inSegPt1, inSegPt2, inOtherPt ) {
+		for ( i = 0; i < holes.length; i ++ ) {
 
-			// inOtherPt needs to be collinear to the inSegment
-			if ( inSegPt1.x !== inSegPt2.x ) {
-
-				if ( inSegPt1.x < inSegPt2.x ) {
-
-					return	( ( inSegPt1.x <= inOtherPt.x ) && ( inOtherPt.x <= inSegPt2.x ) );
-
-				} else {
-
-					return	( ( inSegPt2.x <= inOtherPt.x ) && ( inOtherPt.x <= inSegPt1.x ) );
-
-				}
-
-			} else {
-
-				if ( inSegPt1.y < inSegPt2.y ) {
-
-					return	( ( inSegPt1.y <= inOtherPt.y ) && ( inOtherPt.y <= inSegPt2.y ) );
-
-				} else {
-
-					return	( ( inSegPt2.y <= inOtherPt.y ) && ( inOtherPt.y <= inSegPt1.y ) );
-
-				}
-
-			}
+			holeIndices.push( holeIndex );
+			holeIndex += holes[ i ].length;
+			addContour( vertices, holes[ i ] );
 
 		}
 
-		function intersect_segments_2D( inSeg1Pt1, inSeg1Pt2, inSeg2Pt1, inSeg2Pt2, inExcludeAdjacentSegs ) {
+		//
 
-			var seg1dx = inSeg1Pt2.x - inSeg1Pt1.x, seg1dy = inSeg1Pt2.y - inSeg1Pt1.y;
-			var seg2dx = inSeg2Pt2.x - inSeg2Pt1.x, seg2dy = inSeg2Pt2.y - inSeg2Pt1.y;
+		var triangles = Earcut.triangulate( vertices, holeIndices );
 
-			var seg1seg2dx = inSeg1Pt1.x - inSeg2Pt1.x;
-			var seg1seg2dy = inSeg1Pt1.y - inSeg2Pt1.y;
+		//
 
-			var limit		= seg1dy * seg2dx - seg1dx * seg2dy;
-			var perpSeg1	= seg1dy * seg1seg2dx - seg1dx * seg1seg2dy;
+		for ( var i = 0; i < triangles.length; i += 3 ) {
 
-			if ( Math.abs( limit ) > Number.EPSILON ) {
-
-				// not parallel
-
-				var perpSeg2;
-				if ( limit > 0 ) {
-
-					if ( ( perpSeg1 < 0 ) || ( perpSeg1 > limit ) ) 		{ return []; }
-					perpSeg2 = seg2dy * seg1seg2dx - seg2dx * seg1seg2dy;
-					if ( ( perpSeg2 < 0 ) || ( perpSeg2 > limit ) ) 		{ return []; }
-
-				} else {
-
-					if ( ( perpSeg1 > 0 ) || ( perpSeg1 < limit ) ) 		{ return []; }
-					perpSeg2 = seg2dy * seg1seg2dx - seg2dx * seg1seg2dy;
-					if ( ( perpSeg2 > 0 ) || ( perpSeg2 < limit ) ) 		{ return []; }
-
-				}
-
-				// i.e. to reduce rounding errors
-				// intersection at endpoint of segment#1?
-				if ( perpSeg2 === 0 ) {
-
-					if ( ( inExcludeAdjacentSegs ) &&
-						 ( ( perpSeg1 === 0 ) || ( perpSeg1 === limit ) ) )		{ return []; }
-					return [ inSeg1Pt1 ];
-
-				}
-				if ( perpSeg2 === limit ) {
-
-					if ( ( inExcludeAdjacentSegs ) &&
-						 ( ( perpSeg1 === 0 ) || ( perpSeg1 === limit ) ) )		{ return []; }
-					return [ inSeg1Pt2 ];
-
-				}
-				// intersection at endpoint of segment#2?
-				if ( perpSeg1 === 0 )		{ return [ inSeg2Pt1 ]; }
-				if ( perpSeg1 === limit )	{ return [ inSeg2Pt2 ]; }
-
-				// return real intersection point
-				var factorSeg1 = perpSeg2 / limit;
-				return	[ { x: inSeg1Pt1.x + factorSeg1 * seg1dx, y: inSeg1Pt1.y + factorSeg1 * seg1dy } ];
-
-			} else {
-
-				// parallel or collinear
-				if ( ( perpSeg1 !== 0 ) ||
-					 ( seg2dy * seg1seg2dx !== seg2dx * seg1seg2dy ) ) 			{ return []; }
-
-				// they are collinear or degenerate
-				var seg1Pt = ( ( seg1dx === 0 ) && ( seg1dy === 0 ) );	// segment1 is just a point?
-				var seg2Pt = ( ( seg2dx === 0 ) && ( seg2dy === 0 ) );	// segment2 is just a point?
-				// both segments are points
-				if ( seg1Pt && seg2Pt ) {
-
-					if ( ( inSeg1Pt1.x !== inSeg2Pt1.x ) ||
-						 ( inSeg1Pt1.y !== inSeg2Pt1.y ) )		{ return []; }	// they are distinct  points
-					return [ inSeg1Pt1 ];	// they are the same point
-
-				}
-				// segment#1  is a single point
-				if ( seg1Pt ) {
-
-					if ( ! point_in_segment_2D_colin( inSeg2Pt1, inSeg2Pt2, inSeg1Pt1 ) )		{ return []; }		// but not in segment#2
-					return [ inSeg1Pt1 ];
-
-				}
-				// segment#2  is a single point
-				if ( seg2Pt ) {
-
-					if ( ! point_in_segment_2D_colin( inSeg1Pt1, inSeg1Pt2, inSeg2Pt1 ) )		{ return []; }		// but not in segment#1
-					return [ inSeg2Pt1 ];
-
-				}
-
-				// they are collinear segments, which might overlap
-				var seg1min, seg1max, seg1minVal, seg1maxVal;
-				var seg2min, seg2max, seg2minVal, seg2maxVal;
-				if ( seg1dx !== 0 ) {
-
-					// the segments are NOT on a vertical line
-					if ( inSeg1Pt1.x < inSeg1Pt2.x ) {
-
-						seg1min = inSeg1Pt1; seg1minVal = inSeg1Pt1.x;
-						seg1max = inSeg1Pt2; seg1maxVal = inSeg1Pt2.x;
-
-					} else {
-
-						seg1min = inSeg1Pt2; seg1minVal = inSeg1Pt2.x;
-						seg1max = inSeg1Pt1; seg1maxVal = inSeg1Pt1.x;
-
-					}
-					if ( inSeg2Pt1.x < inSeg2Pt2.x ) {
-
-						seg2min = inSeg2Pt1; seg2minVal = inSeg2Pt1.x;
-						seg2max = inSeg2Pt2; seg2maxVal = inSeg2Pt2.x;
-
-					} else {
-
-						seg2min = inSeg2Pt2; seg2minVal = inSeg2Pt2.x;
-						seg2max = inSeg2Pt1; seg2maxVal = inSeg2Pt1.x;
-
-					}
-
-				} else {
-
-					// the segments are on a vertical line
-					if ( inSeg1Pt1.y < inSeg1Pt2.y ) {
-
-						seg1min = inSeg1Pt1; seg1minVal = inSeg1Pt1.y;
-						seg1max = inSeg1Pt2; seg1maxVal = inSeg1Pt2.y;
-
-					} else {
-
-						seg1min = inSeg1Pt2; seg1minVal = inSeg1Pt2.y;
-						seg1max = inSeg1Pt1; seg1maxVal = inSeg1Pt1.y;
-
-					}
-					if ( inSeg2Pt1.y < inSeg2Pt2.y ) {
-
-						seg2min = inSeg2Pt1; seg2minVal = inSeg2Pt1.y;
-						seg2max = inSeg2Pt2; seg2maxVal = inSeg2Pt2.y;
-
-					} else {
-
-						seg2min = inSeg2Pt2; seg2minVal = inSeg2Pt2.y;
-						seg2max = inSeg2Pt1; seg2maxVal = inSeg2Pt1.y;
-
-					}
-
-				}
-				if ( seg1minVal <= seg2minVal ) {
-
-					if ( seg1maxVal < seg2minVal )	{ return []; }
-					if ( seg1maxVal === seg2minVal )	{
-
-						if ( inExcludeAdjacentSegs )		{ return []; }
-						return [ seg2min ];
-
-					}
-					if ( seg1maxVal <= seg2maxVal )	{ return [ seg2min, seg1max ]; }
-					return	[ seg2min, seg2max ];
-
-				} else {
-
-					if ( seg1minVal > seg2maxVal )	{ return []; }
-					if ( seg1minVal === seg2maxVal )	{
-
-						if ( inExcludeAdjacentSegs )		{ return []; }
-						return [ seg1min ];
-
-					}
-					if ( seg1maxVal <= seg2maxVal )	{ return [ seg1min, seg1max ]; }
-					return	[ seg1min, seg2max ];
-
-				}
-
-			}
+			faces.push( triangles.slice( i, i + 3 ) );
 
 		}
 
-		function isPointInsideAngle( inVertex, inLegFromPt, inLegToPt, inOtherPt ) {
-
-			// The order of legs is important
-
-			// translation of all points, so that Vertex is at (0,0)
-			var legFromPtX	= inLegFromPt.x - inVertex.x, legFromPtY = inLegFromPt.y - inVertex.y;
-			var legToPtX	= inLegToPt.x	- inVertex.x, legToPtY = inLegToPt.y	- inVertex.y;
-			var otherPtX	= inOtherPt.x	- inVertex.x, otherPtY = inOtherPt.y	- inVertex.y;
-
-			// main angle >0: < 180 deg.; 0: 180 deg.; <0: > 180 deg.
-			var from2toAngle	= legFromPtX * legToPtY - legFromPtY * legToPtX;
-			var from2otherAngle	= legFromPtX * otherPtY - legFromPtY * otherPtX;
-
-			if ( Math.abs( from2toAngle ) > Number.EPSILON ) {
-
-				// angle != 180 deg.
-
-				var other2toAngle		= otherPtX * legToPtY - otherPtY * legToPtX;
-				// console.log( "from2to: " + from2toAngle + ", from2other: " + from2otherAngle + ", other2to: " + other2toAngle );
-
-				if ( from2toAngle > 0 ) {
-
-					// main angle < 180 deg.
-					return	( ( from2otherAngle >= 0 ) && ( other2toAngle >= 0 ) );
-
-				} else {
-
-					// main angle > 180 deg.
-					return	( ( from2otherAngle >= 0 ) || ( other2toAngle >= 0 ) );
-
-				}
-
-			} else {
-
-				// angle == 180 deg.
-				// console.log( "from2to: 180 deg., from2other: " + from2otherAngle  );
-				return	( from2otherAngle > 0 );
-
-			}
-
-		}
-
-
-		function removeHoles( contour, holes ) {
-
-			var shape = contour.concat(); // work on this shape
-			var hole;
-
-			function isCutLineInsideAngles( inShapeIdx, inHoleIdx ) {
-
-				// Check if hole point lies within angle around shape point
-				var lastShapeIdx = shape.length - 1;
-
-				var prevShapeIdx = inShapeIdx - 1;
-				if ( prevShapeIdx < 0 )			{ prevShapeIdx = lastShapeIdx; }
-
-				var nextShapeIdx = inShapeIdx + 1;
-				if ( nextShapeIdx > lastShapeIdx )	{ nextShapeIdx = 0; }
-
-				var insideAngle = isPointInsideAngle( shape[ inShapeIdx ], shape[ prevShapeIdx ], shape[ nextShapeIdx ], hole[ inHoleIdx ] );
-				if ( ! insideAngle ) {
-
-					// console.log( "Vertex (Shape): " + inShapeIdx + ", Point: " + hole[inHoleIdx].x + "/" + hole[inHoleIdx].y );
-					return	false;
-
-				}
-
-				// Check if shape point lies within angle around hole point
-				var lastHoleIdx = hole.length - 1;
-
-				var prevHoleIdx = inHoleIdx - 1;
-				if ( prevHoleIdx < 0 )			{ prevHoleIdx = lastHoleIdx; }
-
-				var nextHoleIdx = inHoleIdx + 1;
-				if ( nextHoleIdx > lastHoleIdx )	{ nextHoleIdx = 0; }
-
-				insideAngle = isPointInsideAngle( hole[ inHoleIdx ], hole[ prevHoleIdx ], hole[ nextHoleIdx ], shape[ inShapeIdx ] );
-				if ( ! insideAngle ) {
-
-					// console.log( "Vertex (Hole): " + inHoleIdx + ", Point: " + shape[inShapeIdx].x + "/" + shape[inShapeIdx].y );
-					return	false;
-
-				}
-
-				return	true;
-
-			}
-
-			function intersectsShapeEdge( inShapePt, inHolePt ) {
-
-				// checks for intersections with shape edges
-				var sIdx, nextIdx, intersection;
-				for ( sIdx = 0; sIdx < shape.length; sIdx ++ ) {
-
-					nextIdx = sIdx + 1; nextIdx %= shape.length;
-					intersection = intersect_segments_2D( inShapePt, inHolePt, shape[ sIdx ], shape[ nextIdx ], true );
-					if ( intersection.length > 0 )		{ return	true; }
-
-				}
-
-				return	false;
-
-			}
-
-			var indepHoles = [];
-
-			function intersectsHoleEdge( inShapePt, inHolePt ) {
-
-				// checks for intersections with hole edges
-				var ihIdx, chkHole,
-					hIdx, nextIdx, intersection;
-				for ( ihIdx = 0; ihIdx < indepHoles.length; ihIdx ++ ) {
-
-					chkHole = holes[ indepHoles[ ihIdx ] ];
-					for ( hIdx = 0; hIdx < chkHole.length; hIdx ++ ) {
-
-						nextIdx = hIdx + 1; nextIdx %= chkHole.length;
-						intersection = intersect_segments_2D( inShapePt, inHolePt, chkHole[ hIdx ], chkHole[ nextIdx ], true );
-						if ( intersection.length > 0 )		{ return	true; }
-
-					}
-
-				}
-				return	false;
-
-			}
-
-			var holeIndex, shapeIndex,
-				shapePt, holePt,
-				holeIdx, cutKey, failedCuts = [],
-				tmpShape1, tmpShape2,
-				tmpHole1, tmpHole2;
-
-			for ( var h = 0, hl = holes.length; h < hl; h ++ ) {
-
-				indepHoles.push( h );
-
-			}
-
-			var minShapeIndex = 0;
-			var counter = indepHoles.length * 2;
-			while ( indepHoles.length > 0 ) {
-
-				counter --;
-				if ( counter < 0 ) {
-
-					console.log( 'THREE.ShapeUtils: Infinite Loop! Holes left:" + indepHoles.length + ", Probably Hole outside Shape!' );
-					break;
-
-				}
-
-				// search for shape-vertex and hole-vertex,
-				// which can be connected without intersections
-				for ( shapeIndex = minShapeIndex; shapeIndex < shape.length; shapeIndex ++ ) {
-
-					shapePt = shape[ shapeIndex ];
-					holeIndex	= - 1;
-
-					// search for hole which can be reached without intersections
-					for ( var h = 0; h < indepHoles.length; h ++ ) {
-
-						holeIdx = indepHoles[ h ];
-
-						// prevent multiple checks
-						cutKey = shapePt.x + ':' + shapePt.y + ':' + holeIdx;
-						if ( failedCuts[ cutKey ] !== undefined )			{ continue; }
-
-						hole = holes[ holeIdx ];
-						for ( var h2 = 0; h2 < hole.length; h2 ++ ) {
-
-							holePt = hole[ h2 ];
-							if ( ! isCutLineInsideAngles( shapeIndex, h2 ) )		{ continue; }
-							if ( intersectsShapeEdge( shapePt, holePt ) )		{ continue; }
-							if ( intersectsHoleEdge( shapePt, holePt ) )		{ continue; }
-
-							holeIndex = h2;
-							indepHoles.splice( h, 1 );
-
-							tmpShape1 = shape.slice( 0, shapeIndex + 1 );
-							tmpShape2 = shape.slice( shapeIndex );
-							tmpHole1 = hole.slice( holeIndex );
-							tmpHole2 = hole.slice( 0, holeIndex + 1 );
-
-							shape = tmpShape1.concat( tmpHole1 ).concat( tmpHole2 ).concat( tmpShape2 );
-
-							minShapeIndex = shapeIndex;
-
-							// Debug only, to show the selected cuts
-							// glob_CutLines.push( [ shapePt, holePt ] );
-
-							break;
-
-						}
-						if ( holeIndex >= 0 )	{ break; }		// hole-vertex found
-
-						failedCuts[ cutKey ] = true;			// remember failure
-
-					}
-					if ( holeIndex >= 0 )	{ break; }		// hole-vertex found
-
-				}
-
-			}
-
-			return shape; 			/* shape with no holes */
-
-		}
-
-
-		var i, il, f, face,
-			key, index,
-			allPointsMap = {};
-
-		// To maintain reference to old shape, one must match coordinates, or offset the indices from original arrays. It's probably easier to do the first.
-
-		var allpoints = contour.concat();
-
-		for ( var h = 0, hl = holes.length; h < hl; h ++ ) {
-
-			Array.prototype.push.apply( allpoints, holes[ h ] );
-
-		}
-
-		//console.log( "allpoints",allpoints, allpoints.length );
-
-		// prepare all points map
-
-		for ( i = 0, il = allpoints.length; i < il; i ++ ) {
-
-			key = allpoints[ i ].x + ':' + allpoints[ i ].y;
-
-			if ( allPointsMap[ key ] !== undefined ) {
-
-				console.warn( 'THREE.ShapeUtils: Duplicate point', key, i );
-
-			}
-
-			allPointsMap[ key ] = i;
-
-		}
-
-		// remove holes by cutting paths to holes and adding them to the shape
-		var shapeWithoutHoles = removeHoles( contour, holes );
-
-		var triangles = ShapeUtils.triangulate( shapeWithoutHoles, false ); // True returns indices for points of spooled shape
-		//console.log( "triangles",triangles, triangles.length );
-
-		// check all face vertices against all points map
-
-		for ( i = 0, il = triangles.length; i < il; i ++ ) {
-
-			face = triangles[ i ];
-
-			for ( f = 0; f < 3; f ++ ) {
-
-				key = face[ f ].x + ':' + face[ f ].y;
-
-				index = allPointsMap[ key ];
-
-				if ( index !== undefined ) {
-
-					face[ f ] = index;
-
-				}
-
-			}
-
-		}
-
-		return triangles.concat();
-
-	},
-
-	isClockWise: function ( pts ) {
-
-		return ShapeUtils.area( pts ) < 0;
+		return faces;
 
 	}
 
@@ -42287,7 +42496,7 @@ ExtrudeBufferGeometry.prototype.addShape = function ( shape, options ) {
 
 		this.setIndex( indicesArray );
 		this.addAttribute( 'position', new Float32BufferAttribute( verticesArray, 3 ) );
-		this.addAttribute( 'uv', new Float32BufferAttribute( options.arrays.uv, 2 ) );
+		this.addAttribute( 'uv', new Float32BufferAttribute( uvArray, 2 ) );
 
 	}
 
@@ -44556,6 +44765,7 @@ function LoadingManager( onLoad, onProgress, onError ) {
 	this.setURLModifier = function ( transform ) {
 
 		urlModifier = transform;
+		return this;
 
 	};
 
@@ -44732,7 +44942,7 @@ Object.assign( FileLoader.prototype, {
 
 			request.addEventListener( 'load', function ( event ) {
 
-				var response = event.target.response;
+				var response = this.response;
 
 				Cache.add( url, response );
 
@@ -45281,12 +45491,15 @@ Object.assign( TextureLoader.prototype, {
 
 	load: function ( url, onLoad, onProgress, onError ) {
 
+		var texture = new Texture();
+
 		var loader = new ImageLoader( this.manager );
 		loader.setCrossOrigin( this.crossOrigin );
 		loader.setPath( this.path );
 
-		var texture = new Texture();
-		texture.image = loader.load( url, function () {
+		loader.load( url, function ( image ) {
+
+			texture.image = image;
 
 			// JPEGs can't have an alpha channel, so memory can be saved by storing them as RGB.
 			var isJPEG = url.search( /\.(jpg|jpeg)$/ ) > 0 || url.search( /^data\:image\/jpeg/ ) === 0;
@@ -45765,168 +45978,69 @@ RectAreaLight.prototype = Object.assign( Object.create( Light.prototype ), {
 } );
 
 /**
- * @author tschw
+ *
+ * A Track that interpolates Strings
+ *
+ *
  * @author Ben Houston / http://clara.io/
  * @author David Sarno / http://lighthaus.us/
+ * @author tschw
  */
 
-var AnimationUtils = {
+function StringKeyframeTrack( name, times, values, interpolation ) {
 
-	// same as Array.prototype.slice, but also works on typed arrays
-	arraySlice: function ( array, from, to ) {
+	KeyframeTrack.call( this, name, times, values, interpolation );
 
-		if ( AnimationUtils.isTypedArray( array ) ) {
+}
 
-			// in ios9 array.subarray(from, undefined) will return empty array
-			// but array.subarray(from) or array.subarray(from, len) is correct
-			return new array.constructor( array.subarray( from, to !== undefined ? to : array.length ) );
+StringKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
 
-		}
+	constructor: StringKeyframeTrack,
 
-		return array.slice( from, to );
+	ValueTypeName: 'string',
+	ValueBufferType: Array,
 
-	},
+	DefaultInterpolation: InterpolateDiscrete,
 
-	// converts an array to a specific type
-	convertArray: function ( array, type, forceClone ) {
+	InterpolantFactoryMethodLinear: undefined,
 
-		if ( ! array || // let 'undefined' and 'null' pass
-				! forceClone && array.constructor === type ) { return array; }
+	InterpolantFactoryMethodSmooth: undefined
 
-		if ( typeof type.BYTES_PER_ELEMENT === 'number' ) {
+} );
 
-			return new type( array ); // create typed array
+/**
+ *
+ * A Track of Boolean keyframe values.
+ *
+ *
+ * @author Ben Houston / http://clara.io/
+ * @author David Sarno / http://lighthaus.us/
+ * @author tschw
+ */
 
-		}
+function BooleanKeyframeTrack( name, times, values ) {
 
-		return Array.prototype.slice.call( array ); // create Array
+	KeyframeTrack.call( this, name, times, values );
 
-	},
+}
 
-	isTypedArray: function ( object ) {
+BooleanKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
 
-		return ArrayBuffer.isView( object ) &&
-				! ( object instanceof DataView );
+	constructor: BooleanKeyframeTrack,
 
-	},
+	ValueTypeName: 'bool',
+	ValueBufferType: Array,
 
-	// returns an array by which times and values can be sorted
-	getKeyframeOrder: function ( times ) {
+	DefaultInterpolation: InterpolateDiscrete,
 
-		function compareTime( i, j ) {
+	InterpolantFactoryMethodLinear: undefined,
+	InterpolantFactoryMethodSmooth: undefined
 
-			return times[ i ] - times[ j ];
+	// Note: Actually this track could have a optimized / compressed
+	// representation of a single value and a custom interpolant that
+	// computes "firstValue ^ isOdd( index )".
 
-		}
-
-		var n = times.length;
-		var result = new Array( n );
-		for ( var i = 0; i !== n; ++ i ) { result[ i ] = i; }
-
-		result.sort( compareTime );
-
-		return result;
-
-	},
-
-	// uses the array previously returned by 'getKeyframeOrder' to sort data
-	sortedArray: function ( values, stride, order ) {
-
-		var nValues = values.length;
-		var result = new values.constructor( nValues );
-
-		for ( var i = 0, dstOffset = 0; dstOffset !== nValues; ++ i ) {
-
-			var srcOffset = order[ i ] * stride;
-
-			for ( var j = 0; j !== stride; ++ j ) {
-
-				result[ dstOffset ++ ] = values[ srcOffset + j ];
-
-			}
-
-		}
-
-		return result;
-
-	},
-
-	// function for parsing AOS keyframe formats
-	flattenJSON: function ( jsonKeys, times, values, valuePropertyName ) {
-
-		var i = 1, key = jsonKeys[ 0 ];
-
-		while ( key !== undefined && key[ valuePropertyName ] === undefined ) {
-
-			key = jsonKeys[ i ++ ];
-
-		}
-
-		if ( key === undefined ) { return; } // no data
-
-		var value = key[ valuePropertyName ];
-		if ( value === undefined ) { return; } // no data
-
-		if ( Array.isArray( value ) ) {
-
-			do {
-
-				value = key[ valuePropertyName ];
-
-				if ( value !== undefined ) {
-
-					times.push( key.time );
-					values.push.apply( values, value ); // push all elements
-
-				}
-
-				key = jsonKeys[ i ++ ];
-
-			} while ( key !== undefined );
-
-		} else if ( value.toArray !== undefined ) {
-
-			// ...assume THREE.Math-ish
-
-			do {
-
-				value = key[ valuePropertyName ];
-
-				if ( value !== undefined ) {
-
-					times.push( key.time );
-					value.toArray( values, values.length );
-
-				}
-
-				key = jsonKeys[ i ++ ];
-
-			} while ( key !== undefined );
-
-		} else {
-
-			// otherwise push as-is
-
-			do {
-
-				value = key[ valuePropertyName ];
-
-				if ( value !== undefined ) {
-
-					times.push( key.time );
-					values.push( value );
-
-				}
-
-				key = jsonKeys[ i ++ ];
-
-			} while ( key !== undefined );
-
-		}
-
-	}
-
-};
+} );
 
 /**
  * Abstract base class of interpolants over parametric samples.
@@ -46188,6 +46302,137 @@ Object.assign( Interpolant.prototype, {
 } );
 
 /**
+ * Spherical linear unit quaternion interpolant.
+ *
+ * @author tschw
+ */
+
+function QuaternionLinearInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
+
+	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
+
+}
+
+QuaternionLinearInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+
+	constructor: QuaternionLinearInterpolant,
+
+	interpolate_: function ( i1, t0, t, t1 ) {
+
+		var result = this.resultBuffer,
+			values = this.sampleValues,
+			stride = this.valueSize,
+
+			offset = i1 * stride,
+
+			alpha = ( t - t0 ) / ( t1 - t0 );
+
+		for ( var end = offset + stride; offset !== end; offset += 4 ) {
+
+			Quaternion.slerpFlat( result, 0, values, offset - stride, values, offset, alpha );
+
+		}
+
+		return result;
+
+	}
+
+} );
+
+/**
+ *
+ * A Track of quaternion keyframe values.
+ *
+ * @author Ben Houston / http://clara.io/
+ * @author David Sarno / http://lighthaus.us/
+ * @author tschw
+ */
+
+function QuaternionKeyframeTrack( name, times, values, interpolation ) {
+
+	KeyframeTrack.call( this, name, times, values, interpolation );
+
+}
+
+QuaternionKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
+
+	constructor: QuaternionKeyframeTrack,
+
+	ValueTypeName: 'quaternion',
+
+	// ValueBufferType is inherited
+
+	DefaultInterpolation: InterpolateLinear,
+
+	InterpolantFactoryMethodLinear: function ( result ) {
+
+		return new QuaternionLinearInterpolant( this.times, this.values, this.getValueSize(), result );
+
+	},
+
+	InterpolantFactoryMethodSmooth: undefined // not yet implemented
+
+} );
+
+/**
+ *
+ * A Track of keyframe values that represent color.
+ *
+ *
+ * @author Ben Houston / http://clara.io/
+ * @author David Sarno / http://lighthaus.us/
+ * @author tschw
+ */
+
+function ColorKeyframeTrack( name, times, values, interpolation ) {
+
+	KeyframeTrack.call( this, name, times, values, interpolation );
+
+}
+
+ColorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
+
+	constructor: ColorKeyframeTrack,
+
+	ValueTypeName: 'color'
+
+	// ValueBufferType is inherited
+
+	// DefaultInterpolation is inherited
+
+	// Note: Very basic implementation and nothing special yet.
+	// However, this is the place for color space parameterization.
+
+} );
+
+/**
+ *
+ * A Track of numeric keyframe values.
+ *
+ * @author Ben Houston / http://clara.io/
+ * @author David Sarno / http://lighthaus.us/
+ * @author tschw
+ */
+
+function NumberKeyframeTrack( name, times, values, interpolation ) {
+
+	KeyframeTrack.call( this, name, times, values, interpolation );
+
+}
+
+NumberKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
+
+	constructor: NumberKeyframeTrack,
+
+	ValueTypeName: 'number'
+
+	// ValueBufferType is inherited
+
+	// DefaultInterpolation is inherited
+
+} );
+
+/**
  * Fast and simple cubic spline interpolant.
  *
  * It was derived from a Hermitian construction setting the first derivative
@@ -46403,606 +46648,169 @@ DiscreteInterpolant.prototype = Object.assign( Object.create( Interpolant.protot
 
 } );
 
-var KeyframeTrackPrototype;
-
-KeyframeTrackPrototype = {
-
-	TimeBufferType: Float32Array,
-	ValueBufferType: Float32Array,
-
-	DefaultInterpolation: InterpolateLinear,
-
-	InterpolantFactoryMethodDiscrete: function ( result ) {
-
-		return new DiscreteInterpolant( this.times, this.values, this.getValueSize(), result );
-
-	},
-
-	InterpolantFactoryMethodLinear: function ( result ) {
-
-		return new LinearInterpolant( this.times, this.values, this.getValueSize(), result );
-
-	},
-
-	InterpolantFactoryMethodSmooth: function ( result ) {
-
-		return new CubicInterpolant( this.times, this.values, this.getValueSize(), result );
-
-	},
-
-	setInterpolation: function ( interpolation ) {
-
-		var factoryMethod;
-
-		switch ( interpolation ) {
-
-			case InterpolateDiscrete:
-
-				factoryMethod = this.InterpolantFactoryMethodDiscrete;
-
-				break;
-
-			case InterpolateLinear:
-
-				factoryMethod = this.InterpolantFactoryMethodLinear;
-
-				break;
-
-			case InterpolateSmooth:
-
-				factoryMethod = this.InterpolantFactoryMethodSmooth;
-
-				break;
-
-		}
-
-		if ( factoryMethod === undefined ) {
-
-			var message = "unsupported interpolation for " +
-					this.ValueTypeName + " keyframe track named " + this.name;
-
-			if ( this.createInterpolant === undefined ) {
-
-				// fall back to default, unless the default itself is messed up
-				if ( interpolation !== this.DefaultInterpolation ) {
-
-					this.setInterpolation( this.DefaultInterpolation );
-
-				} else {
-
-					throw new Error( message ); // fatal, in this case
-
-				}
-
-			}
-
-			console.warn( 'THREE.KeyframeTrackPrototype:', message );
-			return;
-
-		}
-
-		this.createInterpolant = factoryMethod;
-
-	},
-
-	getInterpolation: function () {
-
-		switch ( this.createInterpolant ) {
-
-			case this.InterpolantFactoryMethodDiscrete:
-
-				return InterpolateDiscrete;
-
-			case this.InterpolantFactoryMethodLinear:
-
-				return InterpolateLinear;
-
-			case this.InterpolantFactoryMethodSmooth:
-
-				return InterpolateSmooth;
-
-		}
-
-	},
-
-	getValueSize: function () {
-
-		return this.values.length / this.times.length;
-
-	},
-
-	// move all keyframes either forwards or backwards in time
-	shift: function ( timeOffset ) {
-
-		if ( timeOffset !== 0.0 ) {
-
-			var times = this.times;
-
-			for ( var i = 0, n = times.length; i !== n; ++ i ) {
-
-				times[ i ] += timeOffset;
-
-			}
-
-		}
-
-		return this;
-
-	},
-
-	// scale all keyframe times by a factor (useful for frame <-> seconds conversions)
-	scale: function ( timeScale ) {
-
-		if ( timeScale !== 1.0 ) {
-
-			var times = this.times;
-
-			for ( var i = 0, n = times.length; i !== n; ++ i ) {
-
-				times[ i ] *= timeScale;
-
-			}
-
-		}
-
-		return this;
-
-	},
-
-	// removes keyframes before and after animation without changing any values within the range [startTime, endTime].
-	// IMPORTANT: We do not shift around keys to the start of the track time, because for interpolated keys this will change their values
-	trim: function ( startTime, endTime ) {
-
-		var times = this.times,
-			nKeys = times.length,
-			from = 0,
-			to = nKeys - 1;
-
-		while ( from !== nKeys && times[ from ] < startTime ) { ++ from; }
-		while ( to !== - 1 && times[ to ] > endTime ) { -- to; }
-
-		++ to; // inclusive -> exclusive bound
-
-		if ( from !== 0 || to !== nKeys ) {
-
-			// empty tracks are forbidden, so keep at least one keyframe
-			if ( from >= to ) { to = Math.max( to, 1 ), from = to - 1; }
-
-			var stride = this.getValueSize();
-			this.times = AnimationUtils.arraySlice( times, from, to );
-			this.values = AnimationUtils.arraySlice( this.values, from * stride, to * stride );
-
-		}
-
-		return this;
-
-	},
-
-	// ensure we do not get a GarbageInGarbageOut situation, make sure tracks are at least minimally viable
-	validate: function () {
-		var this$1 = this;
-
-
-		var valid = true;
-
-		var valueSize = this.getValueSize();
-		if ( valueSize - Math.floor( valueSize ) !== 0 ) {
-
-			console.error( 'THREE.KeyframeTrackPrototype: Invalid value size in track.', this );
-			valid = false;
-
-		}
-
-		var times = this.times,
-			values = this.values,
-
-			nKeys = times.length;
-
-		if ( nKeys === 0 ) {
-
-			console.error( 'THREE.KeyframeTrackPrototype: Track is empty.', this );
-			valid = false;
-
-		}
-
-		var prevTime = null;
-
-		for ( var i = 0; i !== nKeys; i ++ ) {
-
-			var currTime = times[ i ];
-
-			if ( typeof currTime === 'number' && isNaN( currTime ) ) {
-
-				console.error( 'THREE.KeyframeTrackPrototype: Time is not a valid number.', this$1, i, currTime );
-				valid = false;
-				break;
-
-			}
-
-			if ( prevTime !== null && prevTime > currTime ) {
-
-				console.error( 'THREE.KeyframeTrackPrototype: Out of order keys.', this$1, i, currTime, prevTime );
-				valid = false;
-				break;
-
-			}
-
-			prevTime = currTime;
-
-		}
-
-		if ( values !== undefined ) {
-
-			if ( AnimationUtils.isTypedArray( values ) ) {
-
-				for ( var i = 0, n = values.length; i !== n; ++ i ) {
-
-					var value = values[ i ];
-
-					if ( isNaN( value ) ) {
-
-						console.error( 'THREE.KeyframeTrackPrototype: Value is not a valid number.', this$1, i, value );
-						valid = false;
-						break;
-
-					}
-
-				}
-
-			}
-
-		}
-
-		return valid;
-
-	},
-
-	// removes equivalent sequential keys as common in morph target sequences
-	// (0,0,0,0,1,1,1,0,0,0,0,0,0,0) --> (0,0,1,1,0,0)
-	optimize: function () {
-
-		var times = this.times,
-			values = this.values,
-			stride = this.getValueSize(),
-
-			smoothInterpolation = this.getInterpolation() === InterpolateSmooth,
-
-			writeIndex = 1,
-			lastIndex = times.length - 1;
-
-		for ( var i = 1; i < lastIndex; ++ i ) {
-
-			var keep = false;
-
-			var time = times[ i ];
-			var timeNext = times[ i + 1 ];
-
-			// remove adjacent keyframes scheduled at the same time
-
-			if ( time !== timeNext && ( i !== 1 || time !== time[ 0 ] ) ) {
-
-				if ( ! smoothInterpolation ) {
-
-					// remove unnecessary keyframes same as their neighbors
-
-					var offset = i * stride,
-						offsetP = offset - stride,
-						offsetN = offset + stride;
-
-					for ( var j = 0; j !== stride; ++ j ) {
-
-						var value = values[ offset + j ];
-
-						if ( value !== values[ offsetP + j ] ||
-								value !== values[ offsetN + j ] ) {
-
-							keep = true;
-							break;
-
-						}
-
-					}
-
-				} else { keep = true; }
-
-			}
-
-			// in-place compaction
-
-			if ( keep ) {
-
-				if ( i !== writeIndex ) {
-
-					times[ writeIndex ] = times[ i ];
-
-					var readOffset = i * stride,
-						writeOffset = writeIndex * stride;
-
-					for ( var j = 0; j !== stride; ++ j )
-
-						{ values[ writeOffset + j ] = values[ readOffset + j ]; }
-
-				}
-
-				++ writeIndex;
-
-			}
-
-		}
-
-		// flush last keyframe (compaction looks ahead)
-
-		if ( lastIndex > 0 ) {
-
-			times[ writeIndex ] = times[ lastIndex ];
-
-			for ( var readOffset = lastIndex * stride, writeOffset = writeIndex * stride, j = 0; j !== stride; ++ j )
-
-				{ values[ writeOffset + j ] = values[ readOffset + j ]; }
-
-			++ writeIndex;
-
-		}
-
-		if ( writeIndex !== times.length ) {
-
-			this.times = AnimationUtils.arraySlice( times, 0, writeIndex );
-			this.values = AnimationUtils.arraySlice( values, 0, writeIndex * stride );
-
-		}
-
-		return this;
-
-	}
-
-};
-
-function KeyframeTrackConstructor( name, times, values, interpolation ) {
-
-	if ( name === undefined ) { throw new Error( 'track name is undefined' ); }
-
-	if ( times === undefined || times.length === 0 ) {
-
-		throw new Error( 'no keyframes in track named ' + name );
-
-	}
-
-	this.name = name;
-
-	this.times = AnimationUtils.convertArray( times, this.TimeBufferType );
-	this.values = AnimationUtils.convertArray( values, this.ValueBufferType );
-
-	this.setInterpolation( interpolation || this.DefaultInterpolation );
-
-	this.validate();
-	this.optimize();
-
-}
-
 /**
- *
- * A Track of vectored keyframe values.
- *
- *
+ * @author tschw
  * @author Ben Houston / http://clara.io/
  * @author David Sarno / http://lighthaus.us/
- * @author tschw
  */
 
-function VectorKeyframeTrack( name, times, values, interpolation ) {
+var AnimationUtils = {
 
-	KeyframeTrackConstructor.call( this, name, times, values, interpolation );
+	// same as Array.prototype.slice, but also works on typed arrays
+	arraySlice: function ( array, from, to ) {
 
-}
+		if ( AnimationUtils.isTypedArray( array ) ) {
 
-VectorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrackPrototype ), {
+			// in ios9 array.subarray(from, undefined) will return empty array
+			// but array.subarray(from) or array.subarray(from, len) is correct
+			return new array.constructor( array.subarray( from, to !== undefined ? to : array.length ) );
 
-	constructor: VectorKeyframeTrack,
+		}
 
-	ValueTypeName: 'vector'
+		return array.slice( from, to );
 
-	// ValueBufferType is inherited
+	},
 
-	// DefaultInterpolation is inherited
+	// converts an array to a specific type
+	convertArray: function ( array, type, forceClone ) {
 
-} );
+		if ( ! array || // let 'undefined' and 'null' pass
+				! forceClone && array.constructor === type ) { return array; }
 
-/**
- * Spherical linear unit quaternion interpolant.
- *
- * @author tschw
- */
+		if ( typeof type.BYTES_PER_ELEMENT === 'number' ) {
 
-function QuaternionLinearInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
+			return new type( array ); // create typed array
 
-	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
+		}
 
-}
+		return Array.prototype.slice.call( array ); // create Array
 
-QuaternionLinearInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+	},
 
-	constructor: QuaternionLinearInterpolant,
+	isTypedArray: function ( object ) {
 
-	interpolate_: function ( i1, t0, t, t1 ) {
+		return ArrayBuffer.isView( object ) &&
+				! ( object instanceof DataView );
 
-		var result = this.resultBuffer,
-			values = this.sampleValues,
-			stride = this.valueSize,
+	},
 
-			offset = i1 * stride,
+	// returns an array by which times and values can be sorted
+	getKeyframeOrder: function ( times ) {
 
-			alpha = ( t - t0 ) / ( t1 - t0 );
+		function compareTime( i, j ) {
 
-		for ( var end = offset + stride; offset !== end; offset += 4 ) {
+			return times[ i ] - times[ j ];
 
-			Quaternion.slerpFlat( result, 0, values, offset - stride, values, offset, alpha );
+		}
+
+		var n = times.length;
+		var result = new Array( n );
+		for ( var i = 0; i !== n; ++ i ) { result[ i ] = i; }
+
+		result.sort( compareTime );
+
+		return result;
+
+	},
+
+	// uses the array previously returned by 'getKeyframeOrder' to sort data
+	sortedArray: function ( values, stride, order ) {
+
+		var nValues = values.length;
+		var result = new values.constructor( nValues );
+
+		for ( var i = 0, dstOffset = 0; dstOffset !== nValues; ++ i ) {
+
+			var srcOffset = order[ i ] * stride;
+
+			for ( var j = 0; j !== stride; ++ j ) {
+
+				result[ dstOffset ++ ] = values[ srcOffset + j ];
+
+			}
 
 		}
 
 		return result;
 
-	}
-
-} );
-
-/**
- *
- * A Track of quaternion keyframe values.
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
- * @author tschw
- */
-
-function QuaternionKeyframeTrack( name, times, values, interpolation ) {
-
-	KeyframeTrackConstructor.call( this, name, times, values, interpolation );
-
-}
-
-QuaternionKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrackPrototype ), {
-
-	constructor: QuaternionKeyframeTrack,
-
-	ValueTypeName: 'quaternion',
-
-	// ValueBufferType is inherited
-
-	DefaultInterpolation: InterpolateLinear,
-
-	InterpolantFactoryMethodLinear: function ( result ) {
-
-		return new QuaternionLinearInterpolant( this.times, this.values, this.getValueSize(), result );
-
 	},
 
-	InterpolantFactoryMethodSmooth: undefined // not yet implemented
+	// function for parsing AOS keyframe formats
+	flattenJSON: function ( jsonKeys, times, values, valuePropertyName ) {
 
-} );
+		var i = 1, key = jsonKeys[ 0 ];
 
-/**
- *
- * A Track of numeric keyframe values.
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
- * @author tschw
- */
+		while ( key !== undefined && key[ valuePropertyName ] === undefined ) {
 
-function NumberKeyframeTrack( name, times, values, interpolation ) {
+			key = jsonKeys[ i ++ ];
 
-	KeyframeTrackConstructor.call( this, name, times, values, interpolation );
+		}
 
-}
+		if ( key === undefined ) { return; } // no data
 
-NumberKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrackPrototype ), {
+		var value = key[ valuePropertyName ];
+		if ( value === undefined ) { return; } // no data
 
-	constructor: NumberKeyframeTrack,
+		if ( Array.isArray( value ) ) {
 
-	ValueTypeName: 'number'
+			do {
 
-	// ValueBufferType is inherited
+				value = key[ valuePropertyName ];
 
-	// DefaultInterpolation is inherited
+				if ( value !== undefined ) {
 
-} );
+					times.push( key.time );
+					values.push.apply( values, value ); // push all elements
 
-/**
- *
- * A Track that interpolates Strings
- *
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
- * @author tschw
- */
+				}
 
-function StringKeyframeTrack( name, times, values, interpolation ) {
+				key = jsonKeys[ i ++ ];
 
-	KeyframeTrackConstructor.call( this, name, times, values, interpolation );
+			} while ( key !== undefined );
 
-}
+		} else if ( value.toArray !== undefined ) {
 
-StringKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrackPrototype ), {
+			// ...assume THREE.Math-ish
 
-	constructor: StringKeyframeTrack,
+			do {
 
-	ValueTypeName: 'string',
-	ValueBufferType: Array,
+				value = key[ valuePropertyName ];
 
-	DefaultInterpolation: InterpolateDiscrete,
+				if ( value !== undefined ) {
 
-	InterpolantFactoryMethodLinear: undefined,
+					times.push( key.time );
+					value.toArray( values, values.length );
 
-	InterpolantFactoryMethodSmooth: undefined
+				}
 
-} );
+				key = jsonKeys[ i ++ ];
 
-/**
- *
- * A Track of Boolean keyframe values.
- *
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
- * @author tschw
- */
+			} while ( key !== undefined );
 
-function BooleanKeyframeTrack( name, times, values ) {
+		} else {
 
-	KeyframeTrackConstructor.call( this, name, times, values );
+			// otherwise push as-is
 
-}
+			do {
 
-BooleanKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrackPrototype ), {
+				value = key[ valuePropertyName ];
 
-	constructor: BooleanKeyframeTrack,
+				if ( value !== undefined ) {
 
-	ValueTypeName: 'bool',
-	ValueBufferType: Array,
+					times.push( key.time );
+					values.push( value );
 
-	DefaultInterpolation: InterpolateDiscrete,
+				}
 
-	InterpolantFactoryMethodLinear: undefined,
-	InterpolantFactoryMethodSmooth: undefined
+				key = jsonKeys[ i ++ ];
 
-	// Note: Actually this track could have a optimized / compressed
-	// representation of a single value and a custom interpolant that
-	// computes "firstValue ^ isOdd( index )".
+			} while ( key !== undefined );
 
-} );
+		}
 
-/**
- *
- * A Track of keyframe values that represent color.
- *
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
- * @author tschw
- */
+	}
 
-function ColorKeyframeTrack( name, times, values, interpolation ) {
-
-	KeyframeTrackConstructor.call( this, name, times, values, interpolation );
-
-}
-
-ColorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrackPrototype ), {
-
-	constructor: ColorKeyframeTrack,
-
-	ValueTypeName: 'color'
-
-	// ValueBufferType is inherited
-
-	// DefaultInterpolation is inherited
-
-
-	// Note: Very basic implementation and nothing special yet.
-	// However, this is the place for color space parameterization.
-
-} );
+};
 
 /**
  *
@@ -47016,12 +46824,20 @@ ColorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrackProtot
 
 function KeyframeTrack( name, times, values, interpolation ) {
 
-	KeyframeTrackConstructor.apply( this, name, times, values, interpolation );
+	if ( name === undefined ) { throw new Error( 'THREE.KeyframeTrack: track name is undefined' ); }
+	if ( times === undefined || times.length === 0 ) { throw new Error( 'THREE.KeyframeTrack: no keyframes in track named ' + name ); }
+
+	this.name = name;
+
+	this.times = AnimationUtils.convertArray( times, this.TimeBufferType );
+	this.values = AnimationUtils.convertArray( values, this.ValueBufferType );
+
+	this.setInterpolation( interpolation || this.DefaultInterpolation );
+
+	this.validate();
+	this.optimize();
 
 }
-
-KeyframeTrack.prototype = KeyframeTrackPrototype;
-KeyframeTrackPrototype.constructor = KeyframeTrack;
 
 // Static methods:
 
@@ -47034,7 +46850,7 @@ Object.assign( KeyframeTrack, {
 
 		if ( json.type === undefined ) {
 
-			throw new Error( 'track type undefined, can not parse' );
+			throw new Error( 'THREE.KeyframeTrack: track type undefined, can not parse' );
 
 		}
 
@@ -47141,9 +46957,409 @@ Object.assign( KeyframeTrack, {
 
 		}
 
-		throw new Error( 'Unsupported typeName: ' + typeName );
+		throw new Error( 'THREE.KeyframeTrack: Unsupported typeName: ' + typeName );
 
 	}
+
+} );
+
+Object.assign( KeyframeTrack.prototype, {
+
+	constructor: KeyframeTrack,
+
+	TimeBufferType: Float32Array,
+
+	ValueBufferType: Float32Array,
+
+	DefaultInterpolation: InterpolateLinear,
+
+	InterpolantFactoryMethodDiscrete: function ( result ) {
+
+		return new DiscreteInterpolant( this.times, this.values, this.getValueSize(), result );
+
+	},
+
+	InterpolantFactoryMethodLinear: function ( result ) {
+
+		return new LinearInterpolant( this.times, this.values, this.getValueSize(), result );
+
+	},
+
+	InterpolantFactoryMethodSmooth: function ( result ) {
+
+		return new CubicInterpolant( this.times, this.values, this.getValueSize(), result );
+
+	},
+
+	setInterpolation: function ( interpolation ) {
+
+		var factoryMethod;
+
+		switch ( interpolation ) {
+
+			case InterpolateDiscrete:
+
+				factoryMethod = this.InterpolantFactoryMethodDiscrete;
+
+				break;
+
+			case InterpolateLinear:
+
+				factoryMethod = this.InterpolantFactoryMethodLinear;
+
+				break;
+
+			case InterpolateSmooth:
+
+				factoryMethod = this.InterpolantFactoryMethodSmooth;
+
+				break;
+
+		}
+
+		if ( factoryMethod === undefined ) {
+
+			var message = "unsupported interpolation for " +
+				this.ValueTypeName + " keyframe track named " + this.name;
+
+			if ( this.createInterpolant === undefined ) {
+
+				// fall back to default, unless the default itself is messed up
+				if ( interpolation !== this.DefaultInterpolation ) {
+
+					this.setInterpolation( this.DefaultInterpolation );
+
+				} else {
+
+					throw new Error( message ); // fatal, in this case
+
+				}
+
+			}
+
+			console.warn( 'THREE.KeyframeTrack:', message );
+			return;
+
+		}
+
+		this.createInterpolant = factoryMethod;
+
+	},
+
+	getInterpolation: function () {
+
+		switch ( this.createInterpolant ) {
+
+			case this.InterpolantFactoryMethodDiscrete:
+
+				return InterpolateDiscrete;
+
+			case this.InterpolantFactoryMethodLinear:
+
+				return InterpolateLinear;
+
+			case this.InterpolantFactoryMethodSmooth:
+
+				return InterpolateSmooth;
+
+		}
+
+	},
+
+	getValueSize: function () {
+
+		return this.values.length / this.times.length;
+
+	},
+
+	// move all keyframes either forwards or backwards in time
+	shift: function ( timeOffset ) {
+
+		if ( timeOffset !== 0.0 ) {
+
+			var times = this.times;
+
+			for ( var i = 0, n = times.length; i !== n; ++ i ) {
+
+				times[ i ] += timeOffset;
+
+			}
+
+		}
+
+		return this;
+
+	},
+
+	// scale all keyframe times by a factor (useful for frame <-> seconds conversions)
+	scale: function ( timeScale ) {
+
+		if ( timeScale !== 1.0 ) {
+
+			var times = this.times;
+
+			for ( var i = 0, n = times.length; i !== n; ++ i ) {
+
+				times[ i ] *= timeScale;
+
+			}
+
+		}
+
+		return this;
+
+	},
+
+	// removes keyframes before and after animation without changing any values within the range [startTime, endTime].
+	// IMPORTANT: We do not shift around keys to the start of the track time, because for interpolated keys this will change their values
+	trim: function ( startTime, endTime ) {
+
+		var times = this.times,
+			nKeys = times.length,
+			from = 0,
+			to = nKeys - 1;
+
+		while ( from !== nKeys && times[ from ] < startTime ) {
+
+			++ from;
+
+		}
+
+		while ( to !== - 1 && times[ to ] > endTime ) {
+
+			-- to;
+
+		}
+
+		++ to; // inclusive -> exclusive bound
+
+		if ( from !== 0 || to !== nKeys ) {
+
+			// empty tracks are forbidden, so keep at least one keyframe
+			if ( from >= to ) { to = Math.max( to, 1 ), from = to - 1; }
+
+			var stride = this.getValueSize();
+			this.times = AnimationUtils.arraySlice( times, from, to );
+			this.values = AnimationUtils.arraySlice( this.values, from * stride, to * stride );
+
+		}
+
+		return this;
+
+	},
+
+	// ensure we do not get a GarbageInGarbageOut situation, make sure tracks are at least minimally viable
+	validate: function () {
+		var this$1 = this;
+
+
+		var valid = true;
+
+		var valueSize = this.getValueSize();
+		if ( valueSize - Math.floor( valueSize ) !== 0 ) {
+
+			console.error( 'THREE.KeyframeTrack: Invalid value size in track.', this );
+			valid = false;
+
+		}
+
+		var times = this.times,
+			values = this.values,
+
+			nKeys = times.length;
+
+		if ( nKeys === 0 ) {
+
+			console.error( 'THREE.KeyframeTrack: Track is empty.', this );
+			valid = false;
+
+		}
+
+		var prevTime = null;
+
+		for ( var i = 0; i !== nKeys; i ++ ) {
+
+			var currTime = times[ i ];
+
+			if ( typeof currTime === 'number' && isNaN( currTime ) ) {
+
+				console.error( 'THREE.KeyframeTrack: Time is not a valid number.', this$1, i, currTime );
+				valid = false;
+				break;
+
+			}
+
+			if ( prevTime !== null && prevTime > currTime ) {
+
+				console.error( 'THREE.KeyframeTrack: Out of order keys.', this$1, i, currTime, prevTime );
+				valid = false;
+				break;
+
+			}
+
+			prevTime = currTime;
+
+		}
+
+		if ( values !== undefined ) {
+
+			if ( AnimationUtils.isTypedArray( values ) ) {
+
+				for ( var i = 0, n = values.length; i !== n; ++ i ) {
+
+					var value = values[ i ];
+
+					if ( isNaN( value ) ) {
+
+						console.error( 'THREE.KeyframeTrack: Value is not a valid number.', this$1, i, value );
+						valid = false;
+						break;
+
+					}
+
+				}
+
+			}
+
+		}
+
+		return valid;
+
+	},
+
+	// removes equivalent sequential keys as common in morph target sequences
+	// (0,0,0,0,1,1,1,0,0,0,0,0,0,0) --> (0,0,1,1,0,0)
+	optimize: function () {
+
+		var times = this.times,
+			values = this.values,
+			stride = this.getValueSize(),
+
+			smoothInterpolation = this.getInterpolation() === InterpolateSmooth,
+
+			writeIndex = 1,
+			lastIndex = times.length - 1;
+
+		for ( var i = 1; i < lastIndex; ++ i ) {
+
+			var keep = false;
+
+			var time = times[ i ];
+			var timeNext = times[ i + 1 ];
+
+			// remove adjacent keyframes scheduled at the same time
+
+			if ( time !== timeNext && ( i !== 1 || time !== time[ 0 ] ) ) {
+
+				if ( ! smoothInterpolation ) {
+
+					// remove unnecessary keyframes same as their neighbors
+
+					var offset = i * stride,
+						offsetP = offset - stride,
+						offsetN = offset + stride;
+
+					for ( var j = 0; j !== stride; ++ j ) {
+
+						var value = values[ offset + j ];
+
+						if ( value !== values[ offsetP + j ] ||
+							value !== values[ offsetN + j ] ) {
+
+							keep = true;
+							break;
+
+						}
+
+					}
+
+				} else {
+
+					keep = true;
+
+				}
+
+			}
+
+			// in-place compaction
+
+			if ( keep ) {
+
+				if ( i !== writeIndex ) {
+
+					times[ writeIndex ] = times[ i ];
+
+					var readOffset = i * stride,
+						writeOffset = writeIndex * stride;
+
+					for ( var j = 0; j !== stride; ++ j ) {
+
+						values[ writeOffset + j ] = values[ readOffset + j ];
+
+					}
+
+				}
+
+				++ writeIndex;
+
+			}
+
+		}
+
+		// flush last keyframe (compaction looks ahead)
+
+		if ( lastIndex > 0 ) {
+
+			times[ writeIndex ] = times[ lastIndex ];
+
+			for ( var readOffset = lastIndex * stride, writeOffset = writeIndex * stride, j = 0; j !== stride; ++ j ) {
+
+				values[ writeOffset + j ] = values[ readOffset + j ];
+
+			}
+
+			++ writeIndex;
+
+		}
+
+		if ( writeIndex !== times.length ) {
+
+			this.times = AnimationUtils.arraySlice( times, 0, writeIndex );
+			this.values = AnimationUtils.arraySlice( values, 0, writeIndex * stride );
+
+		}
+
+		return this;
+
+	}
+
+} );
+
+/**
+ *
+ * A Track of vectored keyframe values.
+ *
+ *
+ * @author Ben Houston / http://clara.io/
+ * @author David Sarno / http://lighthaus.us/
+ * @author tschw
+ */
+
+function VectorKeyframeTrack( name, times, values, interpolation ) {
+
+	KeyframeTrack.call( this, name, times, values, interpolation );
+
+}
+
+VectorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
+
+	constructor: VectorKeyframeTrack,
+
+	ValueTypeName: 'vector'
+
+	// ValueBufferType is inherited
+
+	// DefaultInterpolation is inherited
 
 } );
 
@@ -47812,18 +48028,6 @@ Object.assign( Loader.prototype, {
 
 	crossOrigin: undefined,
 
-	extractUrlBase: function ( url ) {
-
-		var parts = url.split( '/' );
-
-		if ( parts.length === 1 ) { return './'; }
-
-		parts.pop();
-
-		return parts.join( '/' ) + '/';
-
-	},
-
 	initMaterials: function ( materials, texturePath, crossOrigin ) {
 		var this$1 = this;
 
@@ -48097,6 +48301,50 @@ Object.assign( Loader.prototype, {
 } );
 
 /**
+ * @author Don McCurdy / https://www.donmccurdy.com
+ */
+
+var LoaderUtils = {
+
+	decodeText: function ( array ) {
+
+		if ( typeof TextDecoder !== 'undefined' ) {
+
+			return new TextDecoder().decode( array );
+
+		}
+
+		// Avoid the String.fromCharCode.apply(null, array) shortcut, which
+		// throws a "maximum call stack size exceeded" error for large arrays.
+
+		var s = '';
+
+		for ( var i = 0, il = array.length; i < il; i ++ ) {
+
+			// Implicitly assumes little-endian.
+			s += String.fromCharCode( array[ i ] );
+
+		}
+
+		return s;
+
+	},
+
+	extractUrlBase: function ( url ) {
+
+		var parts = url.split( '/' );
+
+		if ( parts.length === 1 ) { return './'; }
+
+		parts.pop();
+
+		return parts.join( '/' ) + '/';
+
+	}
+
+};
+
+/**
  * @author mrdoob / http://mrdoob.com/
  * @author alteredq / http://alteredqualia.com/
  */
@@ -48122,7 +48370,7 @@ Object.assign( JSONLoader.prototype, {
 
 		var scope = this;
 
-		var texturePath = this.texturePath && ( typeof this.texturePath === "string" ) ? this.texturePath : Loader.prototype.extractUrlBase( url );
+		var texturePath = this.texturePath && ( typeof this.texturePath === 'string' ) ? this.texturePath : LoaderUtils.extractUrlBase( url );
 
 		var loader = new FileLoader( this.manager );
 		loader.setWithCredentials( this.withCredentials );
@@ -50241,7 +50489,7 @@ function EllipseCurve( aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockw
 	this.xRadius = xRadius || 1;
 	this.yRadius = yRadius || 1;
 
-	this.aStartAngle = aStartAngle || 0;
+	this.aStartAngle = aStartAngle || 0;
 	this.aEndAngle = aEndAngle || 2 * Math.PI;
 
 	this.aClockwise = aClockwise || false;
@@ -50487,7 +50735,30 @@ QuadraticBezierCurve.prototype.copy = function ( source ) {
 
 };
 
-var PathPrototype = Object.assign( Object.create( CurvePath.prototype ), {
+/**
+ * @author zz85 / http://www.lab4games.net/zz85/blog
+ * Creates free form 2d path using series of points, lines or curves.
+ **/
+
+function Path( points ) {
+
+	CurvePath.call( this );
+
+	this.type = 'Path';
+
+	this.currentPoint = new Vector2();
+
+	if ( points ) {
+
+		this.setFromPoints( points );
+
+	}
+
+}
+
+Path.prototype = Object.assign( Object.create( CurvePath.prototype ), {
+
+	constructor: Path,
 
 	setFromPoints: function ( points ) {
 		var this$1 = this;
@@ -50621,30 +50892,6 @@ var PathPrototype = Object.assign( Object.create( CurvePath.prototype ), {
 
 /**
  * @author zz85 / http://www.lab4games.net/zz85/blog
- * Creates free form 2d path using series of points, lines or curves.
- **/
-
-function Path( points ) {
-
-	CurvePath.call( this );
-
-	this.type = 'Path';
-
-	this.currentPoint = new Vector2();
-
-	if ( points ) {
-
-		this.setFromPoints( points );
-
-	}
-
-}
-
-Path.prototype = PathPrototype;
-PathPrototype.constructor = Path;
-
-/**
- * @author zz85 / http://www.lab4games.net/zz85/blog
  * Defines a 2d shape plane using paths.
  **/
 
@@ -50664,7 +50911,7 @@ function Shape( points ) {
 
 }
 
-Shape.prototype = Object.assign( Object.create( PathPrototype ), {
+Shape.prototype = Object.assign( Object.create( Path.prototype ), {
 
 	constructor: Shape,
 
@@ -51056,8 +51303,7 @@ Object.assign( Font.prototype, {
 
 			var path = new ShapePath();
 
-			var pts = [];
-			var x, y, cpx, cpy, cpx0, cpy0, cpx1, cpy1, cpx2, cpy2, laste;
+			var x, y, cpx, cpy, cpx0, cpy0, cpx1, cpy1, cpx2, cpy2;
 
 			if ( glyph.o ) {
 
@@ -51096,22 +51342,9 @@ Object.assign( Font.prototype, {
 
 							path.quadraticCurveTo( cpx1, cpy1, cpx, cpy );
 
-							laste = pts[ pts.length - 1 ];
+							
 
-							if ( laste ) {
-
-								cpx0 = laste.x;
-								cpy0 = laste.y;
-
-								for ( var i2 = 1; i2 <= divisions; i2 ++ ) {
-
-									var t = i2 / divisions;
-									QuadraticBezier( t, cpx0, cpx1, cpx );
-									QuadraticBezier( t, cpy0, cpy1, cpy );
-
-								}
-
-							}
+							
 
 							break;
 
@@ -51126,22 +51359,9 @@ Object.assign( Font.prototype, {
 
 							path.bezierCurveTo( cpx1, cpy1, cpx2, cpy2, cpx, cpy );
 
-							laste = pts[ pts.length - 1 ];
+							
 
-							if ( laste ) {
-
-								cpx0 = laste.x;
-								cpy0 = laste.y;
-
-								for ( var i2 = 1; i2 <= divisions; i2 ++ ) {
-
-									var t = i2 / divisions;
-									CubicBezier( t, cpx0, cpx1, cpx2, cpx );
-									CubicBezier( t, cpy0, cpy1, cpy2, cpy );
-
-								}
-
-							}
+							
 
 							break;
 
@@ -51232,6 +51452,10 @@ Object.assign( FontLoader.prototype, {
 	}
 
 } );
+
+/**
+ * @author mrdoob / http://mrdoob.com/
+ */
 
 var context;
 
@@ -54050,7 +54274,9 @@ function AnimationMixer( root ) {
 
 }
 
-Object.assign( AnimationMixer.prototype, EventDispatcher.prototype, {
+AnimationMixer.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+
+	constructor: AnimationMixer,
 
 	_bindAction: function ( action, prototypeAction ) {
 		var this$1 = this;
@@ -57477,6 +57703,19 @@ SkeletonHelper.prototype.update = function () {
 
 //
 
+Object.assign( Loader.prototype, {
+
+	extractUrlBase: function ( url ) {
+
+		console.warn( 'THREE.Loader: .extractUrlBase() has been deprecated. Use THREE.LoaderUtils.extractUrlBase() instead.' );
+		return LoaderUtils.extractUrlBase( url );
+
+	}
+
+} );
+
+//
+
 Object.assign( Box2.prototype, {
 
 	center: function ( optionalTarget ) {
@@ -58591,6 +58830,30 @@ Object.defineProperties( WebGLRenderTarget.prototype, {
 
 //
 
+Object.assign( WebVRManager.prototype, {
+
+	getStandingMatrix: function () {
+
+		console.warn( 'THREE.WebVRManager: .getStandingMatrix() has been removed.' );
+
+	}
+
+} );
+
+Object.defineProperties( WebVRManager.prototype, {
+
+	standing: {
+		set: function ( /* value */ ) {
+
+			console.warn( 'THREE.WebVRManager: .standing has been removed.' );
+
+		}
+	}
+
+} );
+
+//
+
 Audio.prototype.load = function ( file ) {
 
 	console.warn( 'THREE.Audio: .load has been deprecated. Use THREE.AudioLoader instead.' );
@@ -59457,9 +59720,13 @@ var TransformableMixin = function (base) {
                 // - move by negative origin before rotating.
 
                 // apply each axis rotation, in the x,y,z order.
+                // THREE-COORDS-TO-DOM-COORDS: X rotation is negated here so that
+                // Three rotates on X in the same direction as CSS 3D. It is
+                // negated again when applied to DOM elements so they rotate as
+                // expected in CSS 3D.
                 // TODO #151: make rotation order configurable
                 var rotation = properties.rotation;
-                matrix.rotateAxisAngleSelf(1, 0, 0, rotation.x);
+                matrix.rotateAxisAngleSelf(1, 0, 0, -rotation.x);
                 matrix.rotateAxisAngleSelf(0, 1, 0, rotation.y);
                 matrix.rotateAxisAngleSelf(0, 0, 1, rotation.z);
 
@@ -59865,6 +60132,7 @@ THE SOFTWARE.
 //    'auto' used by default, everything is feature detected
 //    'force' use the polyfill even if not fully needed
 
+// renable
 //installCE(window, {
 //type: 'auto', // default: 'auto'
 //noBuiltIn: false, // default: false
@@ -62361,6 +62629,8 @@ var ElementOperations = function () {
             // element is aligned with the Three mesh in the middle of the view,
             // then in Transformable#_calculateMatrix we adjust the world matrix
             // back into DOM coordinates at the top/left.
+            // -- We apply opposite X rotation to counter the negated X rotation in
+            // Transformable for the Three.js objects.
             //
             // TODO #66: moving _calcSize to a render task affets this code
             var el = this.element;
@@ -62373,7 +62643,11 @@ var ElementOperations = function () {
             // Three objects into the top/left coordinate space.
             var threeJsPreAdjustment = "translate3d(calc(" + (parentSize.x / 2) + "px - " + (elSize.x / 2) + "px), calc(" + (parentSize.y / 2) + "px - " + (elSize.y / 2) + "px), 0px)";
 
-            var cssMatrixString = threeJsPreAdjustment + " matrix3d( " + (domMatrix.m11) + ", " + (domMatrix.m12) + ", " + (domMatrix.m13) + ", " + (domMatrix.m14) + ", " + (domMatrix.m21) + ", " + (domMatrix.m22) + ", " + (domMatrix.m23) + ", " + (domMatrix.m24) + ", " + (domMatrix.m31) + ", " + (domMatrix.m32) + ", " + (domMatrix.m33) + ", " + (domMatrix.m34) + ", " + (domMatrix.m41) + ", " + (-domMatrix.m42) + ", " + (domMatrix.m43) + ", " + (domMatrix.m44) + ")";
+            // counter the negated X rotation from Transformable
+            //const threeJsCounterRotation = `rotateX(${ 2 * el.rotation.x }deg)`
+            domMatrix.rotateAxisAngleSelf(1, 0, 0, 2 * el.rotation.x);
+
+            var cssMatrixString = threeJsPreAdjustment + " matrix3d( " + (domMatrix.m11) + ", " + (domMatrix.m12) + ", " + (domMatrix.m13) + ", " + (domMatrix.m14) + ", " + (domMatrix.m21) + ", " + (domMatrix.m22) + ", " + (domMatrix.m23) + ", " + (domMatrix.m24) + ", " + (domMatrix.m31) + ", " + (domMatrix.m32) + ", " + (domMatrix.m33) + ", " + (domMatrix.m34) + ", " + (domMatrix.m41) + ", " + (-domMatrix.m42) + ", " + (domMatrix.m43) + ", " + (domMatrix.m44) + ") " + ((''));
 
             this.applyStyle('transform', cssMatrixString);
         }
@@ -62396,7 +62670,7 @@ var ElementOperations = function () {
     }, {
         key: 'applyOpacity',
         value: function applyOpacity(opacity) {
-            this.applyStyle('opacity', opacity);
+            this.applyStyle('filter', ("opacity(" + opacity + ")"));
         }
     }, {
         key: 'applyImperativeNodeProperties',
@@ -63063,6 +63337,25 @@ var BaseMeshBehavior = function () {
                 return new MeshPhongMaterial({ color: 0xff6600 });
             }
         }
+
+        // TODO: consolidate duplicate method, similar to LightBase class. In
+        // general we'll fix this with the type system.
+
+    }, {
+        key: 'processNumberValue',
+        value: function processNumberValue(attr, value, context) {
+            context = context || this.threeObject3d;
+            var number = parseFloat(value);
+
+            // TODO PERFORMANCE this check might be too heavy (users will hit this
+            // every frame).
+            if (!value.match(/^\s*(\d+|\d*(.\d+)|(\d+.)\d*)\s*$/)) {
+
+                console.warn(("The value for the \"" + attr + "\" attribute should be a\n                number. It will be passed to window.parseFloat. Your value\n                (\"" + value + "\") will be converted to the number " + number + ".").replace(/\s+/g, ' '));
+            }
+
+            context[attr] = number;
+        }
     }]);
 
     return BaseMeshBehavior;
@@ -63083,6 +63376,7 @@ var BaseMaterialBehavior = function (_BaseMeshBehavior) {
         key: 'attributeChangedCallback',
         value: function attributeChangedCallback(element, attr, oldVal, newVal) {
             return new Promise(function ($return, $error) {
+                var material, opacity;
                 return _get(BaseMaterialBehavior.prototype.__proto__ || _Object$getPrototypeOf(BaseMaterialBehavior.prototype), 'attributeChangedCallback', this).call(this, element).then(function ($await_1) {
                     try {
                         if (!$await_1) { return $return(); }
@@ -63105,6 +63399,28 @@ var BaseMaterialBehavior = function (_BaseMeshBehavior) {
 
                             element._needsToBeRendered();
                         }
+
+                        // Note, Node elements also react to this, and apply it to the DOM
+                        // elements.
+                        // TODO: it'd be nice to implement a sort of opacity that multiplies
+                        // down the tree. We need something good enough for now.  We'll make
+                        // the plain "opacity" attribute be the multiplicative hierarchical
+                        // opacity, while material-opacity could be just for the material.
+                        // Material opacity would be multiplied to the hierarchical opacity.
+                        else if (attr == 'material-opacity') {
+                                material = element.threeObject3d.material;
+
+                                this.processNumberValue('opacity', newVal, material);
+                                opacity = material.opacity;
+
+
+                                if (opacity < 1) { material.transparent = true; }else { material.transparent = false; }
+
+                                element._needsToBeRendered();
+                            }
+
+                        // we can make a lot more attributes as needed...
+
                         return $return();
                     } catch ($boundEx) {
                         return $error($boundEx);
@@ -63120,7 +63436,7 @@ var BaseMaterialBehavior = function (_BaseMeshBehavior) {
     }, {
         key: 'observedAttributes',
         get: function () {
-            return ['color'];
+            return ['color', 'material-opacity'];
         }
     }]);
 
@@ -63169,16 +63485,16 @@ var PhongMaterialBehavior = function (_BaseMaterialBehavior) {
 
 elementBehaviors.define('phong-material', PhongMaterialBehavior);
 
-var DOMPlaneMaterialBehavior = function (_BaseMaterialBehavior) {
-    _inherits(DOMPlaneMaterialBehavior, _BaseMaterialBehavior);
+var DOMNodeMaterialBehavior = function (_BaseMaterialBehavior) {
+    _inherits(DOMNodeMaterialBehavior, _BaseMaterialBehavior);
 
-    function DOMPlaneMaterialBehavior() {
-        _classCallCheck(this, DOMPlaneMaterialBehavior);
+    function DOMNodeMaterialBehavior() {
+        _classCallCheck(this, DOMNodeMaterialBehavior);
 
-        return _possibleConstructorReturn(this, (DOMPlaneMaterialBehavior.__proto__ || _Object$getPrototypeOf(DOMPlaneMaterialBehavior)).apply(this, arguments));
+        return _possibleConstructorReturn(this, (DOMNodeMaterialBehavior.__proto__ || _Object$getPrototypeOf(DOMNodeMaterialBehavior)).apply(this, arguments));
     }
 
-    _createClass(DOMPlaneMaterialBehavior, [{
+    _createClass(DOMNodeMaterialBehavior, [{
         key: 'createComponent',
         value: function createComponent(element) {
             // TODO PERFORMANCE we can re-use a single material for
@@ -63193,10 +63509,10 @@ var DOMPlaneMaterialBehavior = function (_BaseMaterialBehavior) {
         }
     }]);
 
-    return DOMPlaneMaterialBehavior;
+    return DOMNodeMaterialBehavior;
 }(BaseMaterialBehavior);
 
-elementBehaviors.define('domplane-material', DOMPlaneMaterialBehavior);
+elementBehaviors.define('domnode-material', DOMNodeMaterialBehavior);
 
 // base class for geometry behaviors
 
@@ -63325,16 +63641,16 @@ var PlaneGeometryBehavior = function (_BaseGeometryBehavior) {
 
 elementBehaviors.define('plane-geometry', PlaneGeometryBehavior);
 
-var DOMPlaneGeometryBehavior = function (_BaseGeometryBehavior) {
-    _inherits(DOMPlaneGeometryBehavior, _BaseGeometryBehavior);
+var DOMNodeGeometryBehavior = function (_BaseGeometryBehavior) {
+    _inherits(DOMNodeGeometryBehavior, _BaseGeometryBehavior);
 
-    function DOMPlaneGeometryBehavior() {
-        _classCallCheck(this, DOMPlaneGeometryBehavior);
+    function DOMNodeGeometryBehavior() {
+        _classCallCheck(this, DOMNodeGeometryBehavior);
 
-        return _possibleConstructorReturn(this, (DOMPlaneGeometryBehavior.__proto__ || _Object$getPrototypeOf(DOMPlaneGeometryBehavior)).apply(this, arguments));
+        return _possibleConstructorReturn(this, (DOMNodeGeometryBehavior.__proto__ || _Object$getPrototypeOf(DOMNodeGeometryBehavior)).apply(this, arguments));
     }
 
-    _createClass(DOMPlaneGeometryBehavior, [{
+    _createClass(DOMNodeGeometryBehavior, [{
         key: 'createComponent',
         value: function createComponent(element) {
 
@@ -63348,10 +63664,10 @@ var DOMPlaneGeometryBehavior = function (_BaseGeometryBehavior) {
         }
     }]);
 
-    return DOMPlaneGeometryBehavior;
+    return DOMNodeGeometryBehavior;
 }(BaseGeometryBehavior);
 
-elementBehaviors.define('domplane-geometry', DOMPlaneGeometryBehavior);
+elementBehaviors.define('domnode-geometry', DOMNodeGeometryBehavior);
 
 // register behaviors that can be used with this class.
 // TODO: maybe useDefaultNames() should register these, otherwise the user can
@@ -63588,7 +63904,8 @@ var LightBase = function (_Node$$1) {
         }
     }, {
         key: 'processNumberValue',
-        value: function processNumberValue(attr, value) {
+        value: function processNumberValue(attr, value, context) {
+            context = context || this.threeObject3d;
             var number = parseFloat(value);
 
             // TODO PERFORMANCE this check might be too heavy (users will hit this
@@ -63598,7 +63915,7 @@ var LightBase = function (_Node$$1) {
                 console.warn(("The value for the \"" + attr + "\" attribute should be a\n                number. It will be passed to window.parseFloat. Your value\n                (\"" + value + "\") will be converted to the number " + number + ".").replace(/\s+/g, ' '));
             }
 
-            this.threeObject3d[attr] = number;
+            context[attr] = number;
         }
     }], [{
         key: 'observedAttributes',
@@ -63631,13 +63948,16 @@ var PointLight$1 = function (_LightBase) {
         value: function makeThreeObject3d() {
             var light = new PointLight();
             light.intensity = 1; // default 1
+            light.distance = 0; // default 0
+            light.decay = 1; // default 1
             light.castShadow = true; // default false
             light.shadow.mapSize.width = 512; // default 512
             light.shadow.mapSize.height = 512; // default 512
+            light.shadow.radius = 3; // default 1
+            light.shadow.bias = 0; // default 0
+            // TODO: auto-adjust near and far planes like we will with Camera,
+            // unless the user supplies a manual value.
             light.shadow.camera.near = 1; // default 1
-            light.shadow.radius = 1; // default 1
-            // TODO: auto-adjust far like we will with Camera, unless the user
-            // supplies a manual value.
             light.shadow.camera.far = 2000; // default 2000
 
             return light;
@@ -63655,8 +63975,27 @@ var PointLight$1 = function (_LightBase) {
                 this._needsToBeRendered();
             } else if (attr == 'castshadow' || attr == 'cast-shadow') {
 
+                // TODO: generic function to handle boolean attributes
                 if (newVal == 'false' || newVal == null) { this.threeObject3d.castShadow = false; }else { this.threeObject3d.castShadow = true; }
 
+                this._needsToBeRendered();
+            } else if (attr == 'shadowmapwidth' || attr == 'shadow-map-width') {
+                this.processNumberValue('width', newVal, this.threeObject3d.shadow.mapSize);
+                this._needsToBeRendered();
+            } else if (attr == 'shadowmapheight' || attr == 'shadow-map-height') {
+                this.processNumberValue('height', newVal, this.threeObject3d.shadow.mapSize);
+                this._needsToBeRendered();
+            } else if (attr == 'shadowradius' || attr == 'shadow-radius') {
+                this.processNumberValue('radius', newVal, this.threeObject3d.shadow);
+                this._needsToBeRendered();
+            } else if (attr == 'shadowbias' || attr == 'shadow-bias') {
+                this.processNumberValue('bias', newVal, this.threeObject3d.shadow);
+                this._needsToBeRendered();
+            } else if (attr == 'shadowcameranear' || attr == 'shadow-camera-near') {
+                this.processNumberValue('near', newVal, this.threeObject3d.shadow.camera);
+                this._needsToBeRendered();
+            } else if (attr == 'shadowcamerafar' || attr == 'shadow-camera-far') {
+                this.processNumberValue('far', newVal, this.threeObject3d.shadow.camera);
                 this._needsToBeRendered();
             }
         }
@@ -63673,15 +64012,58 @@ var PointLight$1 = function (_LightBase) {
     }, {
         key: 'observedAttributes',
         get: function () {
-            return _get(PointLight$$1.__proto__ || _Object$getPrototypeOf(PointLight$$1), 'observedAttributes', this).concat(['distance', 'decay', 'castshadow', 'cast-shadow']);
+            return _get(PointLight$$1.__proto__ || _Object$getPrototypeOf(PointLight$$1), 'observedAttributes', this).concat(['distance', 'decay', 'castshadow', 'cast-shadow', 'shadowmapwidth', 'shadow-map-width', 'shadowmapheight', 'shadow-map-height', 'shadowradius', 'shadow-radius', 'shadowbias', 'shadow-bias', 'shadowcameranear', 'shadow-camera-near', 'shadowcamerafar', 'shadow-camera-far']);
         }
     }]);
 
     return PointLight$$1;
 }(LightBase);
 
-var DOMPlane = function (_Mesh) {
-    _inherits(DOMPlane, _Mesh);
+var DOMNode = function (_Mesh) {
+    _inherits(DOMNode, _Mesh);
+
+    function DOMNode() {
+        _classCallCheck(this, DOMNode);
+
+        return _possibleConstructorReturn(this, (DOMNode.__proto__ || _Object$getPrototypeOf(DOMNode)).apply(this, arguments));
+    }
+
+    _createClass(DOMNode, [{
+        key: 'isDOMNode',
+        get: function () {
+            return true;
+        }
+    }], [{
+        key: 'defaultElementName',
+        get: function () {
+            return 'i-dom-node';
+        }
+    }, {
+        key: '_Class',
+        get: function () {
+            return DOMNode;
+        }
+    }, {
+        key: 'defaultBehaviors',
+        get: function () {
+            return {
+                'domnode-geometry': function (initialBehaviors) {
+                    return !initialBehaviors.some(function (b) { return b.endsWith('-geometry'); });
+                },
+                'domnode-material': function (initialBehaviors) {
+                    return !initialBehaviors.some(function (b) { return b.endsWith('-material'); });
+                }
+            };
+        }
+    }]);
+
+    return DOMNode;
+}(Mesh$1);
+
+// This class is an alias for DOMNode/i-dom-node
+
+var DOMPlane = function (_DOMNode) {
+    _inherits(DOMPlane, _DOMNode);
 
     function DOMPlane() {
         _classCallCheck(this, DOMPlane);
@@ -63689,12 +64071,7 @@ var DOMPlane = function (_Mesh) {
         return _possibleConstructorReturn(this, (DOMPlane.__proto__ || _Object$getPrototypeOf(DOMPlane)).apply(this, arguments));
     }
 
-    _createClass(DOMPlane, [{
-        key: 'isDOMPlane',
-        get: function () {
-            return true;
-        }
-    }], [{
+    _createClass(DOMPlane, null, [{
         key: 'defaultElementName',
         get: function () {
             return 'i-dom-plane';
@@ -63704,22 +64081,10 @@ var DOMPlane = function (_Mesh) {
         get: function () {
             return DOMPlane;
         }
-    }, {
-        key: 'defaultBehaviors',
-        get: function () {
-            return {
-                'domplane-geometry': function (initialBehaviors) {
-                    return !initialBehaviors.some(function (b) { return b.endsWith('-geometry'); });
-                },
-                'domplane-material': function (initialBehaviors) {
-                    return !initialBehaviors.some(function (b) { return b.endsWith('-material'); });
-                }
-            };
-        }
     }]);
 
     return DOMPlane;
-}(Mesh$1);
+}(DOMNode);
 
 var AmbientLight$1 = function (_LightBase) {
     _inherits(AmbientLight$$1, _LightBase);
@@ -63972,6 +64337,7 @@ function useDefaultNames() {
     if (!customElements.get(Sphere$1.defaultElementName)) { Sphere$1.define(); }
     if (!customElements.get(Plane$3.defaultElementName)) { Plane$3.define(); }
     if (!customElements.get(PointLight$1.defaultElementName)) { PointLight$1.define(); }
+    if (!customElements.get(DOMNode.defaultElementName)) { DOMNode.define(); }
     if (!customElements.get(DOMPlane.defaultElementName)) { DOMPlane.define(); }
     if (!customElements.get(AmbientLight$1.defaultElementName)) { AmbientLight$1.define(); }
     if (!customElements.get(PerspectiveCamera$1.defaultElementName)) { PerspectiveCamera$1.define(); }
