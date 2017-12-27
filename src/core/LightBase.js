@@ -1,5 +1,8 @@
 import Node from './Node'
 import { Color } from 'three'
+import regexr from 'regexr'
+
+const r = regexr
 
 // base class for light elements.
 export default
@@ -23,7 +26,7 @@ class LightBase extends Node {
         if ( attr == 'color' ) {
 
             // if a triplet space-separated of RGB numbers
-            if ( newVal.match( /^\s*\d+\s+\d+\s+\d+\s*$/ ) ) {
+            if ( newVal.match( r`^\s*${r.integer}\s+${r.integer}\s+${r.integer}\s*$` ) ) {
                 newVal = newVal.trim().split( /\s+/ ).map( n => parseFloat(n)/255 )
                 this.threeObject3d.color = new Color( ...newVal )
             }
@@ -48,7 +51,7 @@ class LightBase extends Node {
 
         // TODO PERFORMANCE this check might be too heavy (users will hit this
         // every frame).
-        if ( ! value.match( /^\s*(\d+|\d*(.\d+)|(\d+.)\d*)\s*$/ ) ) {
+        if ( ! value.match( r`^\s*${r.number}\s*$` ) ) {
 
             console.warn( (
                 `The value for the "${ attr }" attribute should be a

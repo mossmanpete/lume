@@ -42,7 +42,8 @@
     "jss-vendor-prefixer": "^1.0.0",
     "pixi-svg": "^1.0.1",
     "pixi.js": "^4.5.3",
-    "three": "^0.88.0",
+    "regexr": "^1.1.1",
+    "three": "trusktr/three.js#patch-7",
     "two.js": "trusktr/two.js#patch-2"
   },
   "devDependencies": {
