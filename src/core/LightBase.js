@@ -1,5 +1,11 @@
 import Node from './Node'
 import { Color } from 'three'
+import { default as r } from 'regexr'
+
+const numberValue = r`^\s*${r.number}\s*$`
+const integerTripletValue = r`^\s*${r.integer}\s+${r.integer}\s+${r.integer}\s*$`
+const oneOrMoreSpaces = /\s+/g
+const twoOrMoreSpaces = /\s\s+/g
 
 // base class for light elements.
 export default
@@ -23,8 +29,8 @@ class LightBase extends Node {
         if ( attr == 'color' ) {
 
             // if a triplet space-separated of RGB numbers
-            if ( newVal.match( /^\s*\d+\s+\d+\s+\d+\s*$/ ) ) {
-                newVal = newVal.trim().split( /\s+/ ).map( n => parseFloat(n)/255 )
+            if ( newVal.match( integerTripletValue ) ) {
+                newVal = newVal.trim().split( oneOrMoreSpaces ).map( n => parseFloat(n)/255 )
                 this.threeObject3d.color = new Color( ...newVal )
             }
             // otherwise a CSS-style color string
@@ -48,13 +54,13 @@ class LightBase extends Node {
 
         // TODO PERFORMANCE this check might be too heavy (users will hit this
         // every frame).
-        if ( ! value.match( /^\s*(\d+|\d*(.\d+)|(\d+.)\d*)\s*$/ ) ) {
+        if ( ! value.match( numberValue ) ) {
 
             console.warn( (
                 `The value for the "${ attr }" attribute should be a
                 number. It will be passed to window.parseFloat. Your value
                 ("${ value }") will be converted to the number ${ number }.`
-            ).replace( /\s+/g, ' ' ) )
+            ).replace( twoOrMoreSpaces, ' ' ) )
 
         }
 

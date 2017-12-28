@@ -4,5 +4,6 @@ module.exports = {
     transforms: {
         modules: false,
         dangerousForOf: true,
+        templateString: false,
     },
 }

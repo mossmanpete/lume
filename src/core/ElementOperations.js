@@ -113,9 +113,10 @@ class ElementOperations {
         const threeJsPreAdjustment = `translate3d(calc(${parentSize.x/2}px - ${elSize.x/2}px), calc(${parentSize.y/2}px - ${elSize.y/2}px), 0px)`
 
         // counter the negated X rotation from Transformable
-        matrix.rotateAxisAngleSelf( 1, 0, 0, 2 * el.rotation.x )
+        //const threeJsCounterRotation = `rotateX(${ 2 * el.rotation.x }deg)`
+        domMatrix.rotateAxisAngleSelf( 1, 0, 0, 2 * el.rotation.x )
 
-        const cssMatrixString = `${threeJsPreAdjustment} matrix3d( ${ domMatrix.m11 }, ${ domMatrix.m12 }, ${ domMatrix.m13 }, ${ domMatrix.m14 }, ${ domMatrix.m21 }, ${ domMatrix.m22 }, ${ domMatrix.m23 }, ${ domMatrix.m24 }, ${ domMatrix.m31 }, ${ domMatrix.m32 }, ${ domMatrix.m33 }, ${ domMatrix.m34 }, ${ domMatrix.m41 }, ${ -domMatrix.m42 }, ${ domMatrix.m43 }, ${ domMatrix.m44 })`;
+        const cssMatrixString = `${threeJsPreAdjustment} matrix3d( ${ domMatrix.m11 }, ${ domMatrix.m12 }, ${ domMatrix.m13 }, ${ domMatrix.m14 }, ${ domMatrix.m21 }, ${ domMatrix.m22 }, ${ domMatrix.m23 }, ${ domMatrix.m24 }, ${ domMatrix.m31 }, ${ domMatrix.m32 }, ${ domMatrix.m33 }, ${ domMatrix.m34 }, ${ domMatrix.m41 }, ${ -domMatrix.m42 }, ${ domMatrix.m43 }, ${ domMatrix.m44 }) ${threeJsCounterRotation, ''}`;
 
         this.applyStyle('transform', cssMatrixString)
     }
@@ -133,7 +134,7 @@ class ElementOperations {
     }
 
     applyOpacity(opacity) {
-        this.applyStyle('opacity', opacity)
+        this.applyStyle('filter', `opacity(${opacity})`)
     }
 
     applyImperativeNodeProperties(node) {

@@ -92,4 +92,26 @@ class BaseMeshBehavior {
             return new MeshPhongMaterial( { color: 0xff6600 } )
         }
     }
+
+    // TODO: consolidate duplicate method, similar to LightBase class. In
+    // general we'll fix this with the type system.
+    processNumberValue( attr, value, context ) {
+        context = context || this.threeObject3d
+        const number = parseFloat( value )
+
+        // TODO PERFORMANCE this check might be too heavy (users will hit this
+        // every frame).
+        if ( ! value.match( /^\s*(\d+|\d*(.\d+)|(\d+.)\d*)\s*$/ ) ) {
+
+            console.warn( (
+                `The value for the "${ attr }" attribute should be a
+                number. It will be passed to window.parseFloat. Your value
+                ("${ value }") will be converted to the number ${ number }.`
+            ).replace( /\s+/g, ' ' ) )
+
+        }
+
+        context[ attr ] = number
+    }
+
 }
