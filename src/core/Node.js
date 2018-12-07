@@ -8,6 +8,8 @@ import {
     Object3D,
 } from 'three'
 
+console.log( 'goo' )
+
 const radiansPerDegree = 1 / 360 * 2*Math.PI
 
 initImperativeBase()
